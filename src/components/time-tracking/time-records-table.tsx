@@ -73,7 +73,7 @@ export function TimeRecordsTable({ records }: TimeRecordsTableProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {records.map((record, index) => (
+              {records.map((record) => (
                 <TableRow
                   key={record.id}
                   className="border-gray-50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-indigo-50/30 transition-all duration-200"

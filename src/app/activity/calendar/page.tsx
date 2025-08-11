@@ -15,6 +15,7 @@ import {
 import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 
 type ViewMode = "month" | "week" | "day"
 
@@ -483,33 +484,13 @@ function EventModal({
         </div>
 
         <div className="flex items-center gap-3 mb-6">
-          <span className="text-sm text-gray-600">Faturalandırma</span>
-          <div className="inline-flex rounded-md overflow-hidden border">
-            <button
-              type="button"
-              onClick={() => setBillable(true)}
-              className={
-                "px-3 py-1 text-sm font-medium transition-colors " +
-                (billable
-                  ? "bg-green-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-green-50")
-              }
-            >
-              Evet
-            </button>
-            <button
-              type="button"
-              onClick={() => setBillable(false)}
-              className={
-                "px-3 py-1 text-sm font-medium border-l transition-colors " +
-                (!billable
-                  ? "bg-red-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-red-50")
-              }
-            >
-              Hayır
-            </button>
-          </div>
+          <span className="text-sm text-gray-600" id="billable-label">Faturalandırma</span>
+          <Switch
+            aria-labelledby="billable-label"
+            checked={billable}
+            onCheckedChange={setBillable}
+            className="data-[state=checked]:bg-green-600 focus-visible:ring-green-500/50"
+          />
         </div>
 
         <div className="flex items-center justify-end gap-3">

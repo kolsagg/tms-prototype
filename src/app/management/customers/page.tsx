@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/select";
 import {
   Table,
-  TableBody,
   TableCell,
+  TableBody,
   TableHead,
   TableHeader,
   TableRow,

@@ -5,8 +5,8 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Business Management System",
-  description: "Modern business management and time tracking system",
+  title: "Aktivite Yönetimi | ConcentIT",
+  description: "Kullanıcı aktivitelerini izleyin ve yönetin",
 }
 
 export default function RootLayout({

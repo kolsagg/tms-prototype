@@ -42,11 +42,19 @@ export default function CalendarPage() {
   const [userEvents, setUserEvents] = useState<CalendarEvent[]>([])
   const userProjects = useMemo(() => (
     [
-      { id: "alpha", name: "Alpha" },
-      { id: "beta", name: "Beta" },
-      { id: "gamma", name: "Gamma" },
+      { id: "iatco", name: "IATCO" },
+      { id: "bilkent", name: "BİLKENT" },
+      { id: "ilbak", name: "İLBAK" },
+      { id: "limak", name: "LİMAK" },
     ]
   ), [])
+
+  const projectIdToName = useMemo(() => {
+    return userProjects.reduce<Record<string, string>>((m, p) => {
+      m[p.id] = p.name
+      return m
+    }, {})
+  }, [userProjects])
 
   const breadcrumbItems = useMemo(
     () => [
@@ -118,13 +126,13 @@ export default function CalendarPage() {
       const y = d.getFullYear()
       const m = d.getMonth()
       data.push(
-        make(y, m, 1, "blue", "Matco Destek - Geliştirme", "Alpha"),
-        make(y, m, 8, "amber", "Sprint Planlama", "Beta"),
-        make(y, m, 12 + i, "green", "Kod İncelemesi", "Beta"),
-        make(y, m, 14 + i, "purple", "Müşteri Toplantısı", "Gamma"),
-        make(y, m, 21, "blue", "Yayın Hazırlığı", "Beta"),
-        make(y, m, 25, "green", "QA Senaryoları", "Alpha"),
-        make(y, m, 28, "purple", "Retrospektif", "Tüm Takım"),
+        make(y, m, 1, "blue", "Matco Destek - Geliştirme", "iatco"),
+        make(y, m, 8, "blue", "Sprint Planlama", "bilkent"),
+        make(y, m, 12 + i, "blue", "Kod İncelemesi", "bilkent"),
+        make(y, m, 14 + i, "blue", "Müşteri Toplantısı", "ilbak"),
+        make(y, m, 21, "blue", "Yayın Hazırlığı", "bilkent"),
+        make(y, m, 25, "blue", "QA Senaryoları", "iatco"),
+        make(y, m, 28, "blue", "Retrospektif", "limak"),
       )
     })
     return data
@@ -262,12 +270,19 @@ export default function CalendarPage() {
                             <div
                               key={ev.id}
                               className={
-                                "truncate rounded-md border px-2 py-1 text-[11px] font-medium " +
+                                "rounded-md border px-2 py-1 text-[11px] font-medium " +
                                 colorToClasses(ev.color)
                               }
-                              title={ev.title}
+                              title={`${ev.title}${ev.project ? ` • ${projectIdToName[ev.project]}` : ""}`}
                             >
-                              {ev.title}
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="truncate">{ev.title}</span>
+                                {ev.project && (
+                                  <span className="shrink-0 rounded bg-white/80 px-1 py-[1px] text-[9px] font-semibold text-gray-700 border border-gray-200">
+                                    {projectIdToName[ev.project]}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           ))}
                           {dayEvents.length > 2 && (
@@ -308,8 +323,19 @@ export default function CalendarPage() {
                                   <div className="text-xs text-gray-400">Etkinlik yok</div>
                                 )}
                                 {dayEvents.map((ev) => (
-                                  <div key={ev.id} className={"rounded-md border px-2 py-1 text-xs " + colorToClasses(ev.color)}>
-                                    {ev.title}
+                                  <div
+                                    key={ev.id}
+                                    className={"rounded-md border px-2 py-1 text-xs " + colorToClasses(ev.color)}
+                                    title={`${ev.title}${ev.project ? ` • ${projectIdToName[ev.project]}` : ""}`}
+                                  >
+                                    <div className="flex items-center justify-between gap-2">
+                                      <span className="truncate">{ev.title}</span>
+                                      {ev.project && (
+                                        <span className="shrink-0 rounded bg-white/80 px-1 py-[1px] text-[10px] font-semibold text-gray-700 border border-gray-200">
+                                          {projectIdToName[ev.project]}
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
                                 ))}
                               </div>
@@ -324,7 +350,11 @@ export default function CalendarPage() {
             )}
 
             {viewMode === "day" && (
-              <div className="rounded-xl border bg-white overflow-hidden p-4">
+              <div
+                className="rounded-xl border bg-white overflow-hidden p-4 cursor-pointer"
+                onClick={() => setIsModalOpen(true)}
+                title="Bu güne yeni etkinlik eklemek için tıklayın"
+              >
                 {(() => {
                   const key = formatDateKey(selectedDate)
                   const dayEvents = eventsByDay[key] || []
@@ -340,9 +370,13 @@ export default function CalendarPage() {
                         </div>
                       )}
                       {dayEvents.map((ev) => (
-                        <div key={ev.id} className={"rounded-lg border p-3 text-sm " + colorToClasses(ev.color)}>
+                        <div
+                          key={ev.id}
+                          className={"rounded-lg border p-3 text-sm " + colorToClasses(ev.color)}
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <div className="font-medium">{ev.title}</div>
-                          <div className="text-xs text-gray-500">09:00 - 11:00 {ev.project ?? ""}</div>
+                          <div className="text-xs text-gray-500">09:00 - 11:00 {ev.project ? projectIdToName[ev.project] : ""}</div>
                         </div>
                       ))}
                     </div>

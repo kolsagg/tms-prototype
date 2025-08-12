@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Filter, FileText, ChevronLeft, ChevronRight, ListChecks, RotateCcw, ChevronUp, ChevronDown, FileDown, FileSpreadsheet, Printer } from "lucide-react"
+import { Filter, FileText, ChevronLeft, ChevronRight, RotateCcw, ChevronUp, ChevronDown, FileDown, FileSpreadsheet, Printer } from "lucide-react"
 import Link from "next/link"
 import { useMemo, useState } from "react"
 
@@ -57,6 +57,12 @@ function priorityBadge(priority: Task["priority"]) {
   if (priority === "high") return "bg-gradient-to-r from-orange-100 to-red-100 text-orange-700"
   if (priority === "medium") return "bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700"
   return "bg-gradient-to-r from-green-100 to-emerald-100 text-green-700"
+}
+
+function priorityExclamations(priority: Task["priority"]) {
+  if (priority === "high") return "!!!"
+  if (priority === "medium") return "!!"
+  return "!"
 }
 
 export default function TasksPage() {
@@ -119,12 +125,7 @@ export default function TasksPage() {
   return (
     <MainLayout contentClassName="max-w-none">
       <Breadcrumb items={breadcrumbItems} />
-      <PageHeader
-        title="Görev Listesi"
-        subtitle="Görevlerinizi filtreleyin, arayın ve yönetin"
-        status="Aktif liste"
-        actionButton={{ label: "Yeni Görev", icon: ListChecks, onClick: () => console.log("new task") }}
-      />
+      <PageHeader title="Görev Listesi" />
 
       {/* Filtrelenebilir Panel */}
       <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-md overflow-hidden mb-8">
@@ -220,7 +221,8 @@ export default function TasksPage() {
                     <TableCell className="text-gray-600 font-medium">{t.project}</TableCell>
                     <TableCell>
                       <Badge className={`border-0 px-3 py-1 ${priorityBadge(t.priority)}`}>
-                        {t.priority === "high" ? "Yüksek" : t.priority === "medium" ? "Normal" : "Düşük"}
+                        <span className="mr-1">{priorityExclamations(t.priority)}</span>
+                        {t.priority === "high" ? "Yüksek" : t.priority === "medium" ? "Orta" : "Düşük"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-gray-600 font-medium">

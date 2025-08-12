@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { MainLayout } from "@/components/layout/main-layout"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
@@ -37,7 +37,7 @@ const mockTasks: Task[] = [
     startDate: "02.08.2025",
     endDate: "03.08.2025",
     estimateHours: 10,
-    completion: 100,
+    completion: 10,
     assignedAt: "02.08.2025 10:42",
     assignee: "Emre Kolunsağ",
     description:
@@ -68,8 +68,8 @@ export default function TaskDetailPage() {
 
   const project: Project = {
     id: String(task.id),
-    name: task.title,
-    type: task.project,
+    name: task.project,
+    type: task.title,
     assignee: task.assignee,
     priority: task.priority,
     status: task.status,
@@ -77,14 +77,14 @@ export default function TaskDetailPage() {
     startDate: task.startDate,
     endDate: task.endDate,
     estimatedHours: task.estimateHours,
-    actualHours: task.estimateHours,
-    completionPercentage: task.completion,
+    actualHours: 0,
+    completionPercentage: 0,
   }
 
   const mockTimeRecords: TimeRecord[] = [
     {
       id: 1,
-      date: task.startDate,
+      date: "2025-08-02",
       startTime: "09:00",
       endTime: "15:00",
       duration: 6,
@@ -93,7 +93,7 @@ export default function TaskDetailPage() {
     },
     {
       id: 2,
-      date: task.startDate,
+      date: "2025-08-02",
       startTime: "09:00",
       endTime: "13:00",
       duration: 4,
@@ -101,6 +101,62 @@ export default function TaskDetailPage() {
       billable: true,
     },
   ]
+
+  function computeDurationHours(start: string, end: string): number {
+    const [sh, sm] = start.split(":").map(Number)
+    const [eh, em] = end.split(":").map(Number)
+    const startMinutes = sh * 60 + sm
+    const endMinutes = eh * 60 + em
+    const diff = Math.max(0, endMinutes - startMinutes)
+    return Math.round((diff / 60) * 100) / 100
+  }
+
+  function TaskTimeTracking({ initialRecords, baseProject }: { initialRecords: TimeRecord[]; baseProject: Project }) {
+    const [records, setRecords] = useState<TimeRecord[]>(initialRecords)
+
+    const addRecord = (r: { date: string; startTime: string; endTime: string; description: string; billable: boolean }) => {
+      const nextId = (records.at(-1)?.id ?? 0) + 1
+      const duration = computeDurationHours(r.startTime, r.endTime)
+      const newRecord: TimeRecord = { id: nextId, duration, ...r }
+      setRecords((prev) => [newRecord, ...prev])
+    }
+
+    const updateRecord = (updated: TimeRecord) => {
+      setRecords((prev) =>
+        prev.map((r) => (r.id === updated.id ? { ...updated, duration: computeDurationHours(updated.startTime, updated.endTime) } : r))
+      )
+    }
+
+    const deleteRecord = (id: number) => {
+      setRecords((prev) => prev.filter((r) => r.id !== id))
+    }
+
+    const actualHours = useMemo(() => records.reduce((sum, r) => sum + r.duration, 0), [records])
+    const completionPercentage = useMemo(() => {
+      const est = baseProject.estimatedHours || 0
+      if (est <= 0) return 0
+      return Math.round((actualHours / est) * 100)
+    }, [actualHours, baseProject.estimatedHours])
+
+    const enrichedProject: Project = { ...baseProject, actualHours, completionPercentage }
+
+    return (
+      <>
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 mb-8">
+          <div className="xl:col-span-3">
+            <ProjectDetailsCard project={enrichedProject} />
+          </div>
+          <div className="xl:col-span-1">
+            <FileUploadCard />
+          </div>
+        </div>
+        <div className="space-y-8">
+          <TimeEntryForm onAdd={addRecord} />
+          <TimeRecordsTable records={records} onDelete={deleteRecord} onUpdate={updateRecord} />
+        </div>
+      </>
+    )
+  }
 
   const breadcrumbItems = [
     { label: "Anasayfa", href: "/" },
@@ -119,19 +175,7 @@ export default function TaskDetailPage() {
         actionButton={{ label: "Geri Dön", icon: ArrowLeft, onClick: () => router.push("/activity/tasks") }}
       />
 
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 mb-8">
-        <div className="xl:col-span-3">
-          <ProjectDetailsCard project={project} />
-        </div>
-        <div className="xl:col-span-1">
-          <FileUploadCard />
-        </div>
-      </div>
-
-      <div className="space-y-8">
-        <TimeEntryForm />
-        <TimeRecordsTable records={mockTimeRecords} />
-      </div>
+      <TaskTimeTracking initialRecords={mockTimeRecords} baseProject={project} />
     </MainLayout>
   )
 }

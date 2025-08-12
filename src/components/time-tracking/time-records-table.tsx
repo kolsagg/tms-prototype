@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Clock, Search, Filter, FileText, Trash2, ChevronLeft, ChevronRight } from "lucide-react"
+import { Clock, Search, Trash2, ChevronLeft, ChevronRight } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 interface TimeRecord {
   id: number
@@ -22,19 +23,41 @@ interface TimeRecord {
 
 interface TimeRecordsTableProps {
   records: TimeRecord[]
+  onDelete?: (id: number) => void
+  onUpdate?: (record: TimeRecord) => void
 }
 
-export function TimeRecordsTable({ records }: TimeRecordsTableProps) {
-  const [selectedRows, setSelectedRows] = useState<number[]>([])
-
-  const toggleRowSelection = (id: number) => {
-    setSelectedRows((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]))
-  }
+export function TimeRecordsTable({ records, onDelete, onUpdate }: TimeRecordsTableProps) {
+  const [query, setQuery] = useState("")
+  const [confirmOpen, setConfirmOpen] = useState<null | number>(null)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editDraft, setEditDraft] = useState<Partial<TimeRecord>>({})
 
   const getDurationBadgeColor = (duration: number) => {
     if (duration >= 6) return "bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700"
     if (duration >= 4) return "bg-gradient-to-r from-green-100 to-emerald-100 text-green-700"
     return "bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700"
+  }
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return records
+    return records.filter((r) =>
+      [r.description, r.date, r.startTime, r.endTime].some((v) => v.toLowerCase().includes(q))
+    )
+  }, [records, query])
+
+  const startEdit = (r: TimeRecord) => {
+    setEditingId(r.id)
+    setEditDraft({ ...r })
+  }
+
+  const commitEdit = () => {
+    if (editingId == null) return
+    const draft = editDraft as TimeRecord
+    onUpdate?.(draft)
+    setEditingId(null)
+    setEditDraft({})
   }
 
   return (
@@ -50,11 +73,13 @@ export function TimeRecordsTable({ records }: TimeRecordsTableProps) {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 bg-white/80 rounded-xl p-2 border border-gray-200">
               <Search className="h-4 w-4 text-gray-400" />
-              <Input placeholder="Kayıtlarda ara..." className="w-48 border-0 bg-transparent focus:ring-0 h-8" />
+              <Input
+                placeholder="Kayıtlarda ara..."
+                className="w-56 border-0 bg-transparent focus:ring-0 h-8"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
             </div>
-            <Button variant="outline" size="icon" className="border-gray-200 bg-white/80 hover:bg-gray-50 h-10 w-10">
-              <Filter className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       </CardHeader>
@@ -73,45 +98,112 @@ export function TimeRecordsTable({ records }: TimeRecordsTableProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {records.map((record) => (
+              {filtered.map((record) => (
                 <TableRow
                   key={record.id}
-                  className="border-gray-50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-indigo-50/30 transition-all duration-200"
+                  className="border-gray-50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-indigo-50/30 transition-all duration-200 cursor-pointer"
+                  onClick={() => {
+                    if (editingId !== record.id) startEdit(record)
+                  }}
                 >
-                  <TableCell className="font-bold py-6">{record.date}</TableCell>
-                  <TableCell className="text-gray-600 font-medium">{record.startTime}</TableCell>
-                  <TableCell className="text-gray-600 font-medium">{record.endTime}</TableCell>
+                  {editingId === record.id ? (
+                    <>
+                      <TableCell className="py-4">
+                        <Input type="date" value={String(editDraft.date || record.date)} onChange={(e) => setEditDraft((d) => ({ ...d, date: e.target.value }))} className="h-9 w-40" />
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <Input type="time" value={String(editDraft.startTime || record.startTime)} onChange={(e) => setEditDraft((d) => ({ ...d, startTime: e.target.value }))} className="h-9 w-28" />
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <Input type="time" value={String(editDraft.endTime || record.endTime)} onChange={(e) => setEditDraft((d) => ({ ...d, endTime: e.target.value }))} className="h-9 w-28" />
+                      </TableCell>
                   <TableCell>
-                    <Badge className={`border-0 px-3 py-1 ${getDurationBadgeColor(record.duration)}`}>
-                      {record.duration} saat
-                    </Badge>
+                        <Badge className={`border-0 px-3 py-1 ${getDurationBadgeColor(record.duration)}`}>{record.duration} saat</Badge>
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <Input value={String(editDraft.description || record.description)} onChange={(e) => setEditDraft((d) => ({ ...d, description: e.target.value }))} className="h-9" />
                   </TableCell>
-                  <TableCell className="text-gray-600 font-medium">{record.description}</TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={selectedRows.includes(record.id)}
-                      onCheckedChange={() => toggleRowSelection(record.id)}
-                      className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-600 data-[state=checked]:to-indigo-600"
-                    />
-                  </TableCell>
+                      <TableCell className="py-4">
+                        <Switch
+                          checked={(editDraft.billable as boolean | undefined) ?? record.billable}
+                          onCheckedChange={(checked) => setEditDraft((d) => ({ ...d, billable: checked }))}
+                          onClick={(e) => e.stopPropagation()}
+                          className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-amber-500 data-[state=checked]:to-yellow-500 focus-visible:ring-2 focus-visible:ring-amber-300"
+                        />
+                      </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
+                          <Button size="sm" className="h-9 px-3" onClick={(e) => { e.stopPropagation(); commitEdit() }}>Kaydet</Button>
+                          <Button variant="outline" size="sm" className="h-9 px-3" onClick={(e) => { e.stopPropagation(); setEditingId(null); setEditDraft({}) }}>Vazgeç</Button>
+                          <Popover open={confirmOpen === record.id} onOpenChange={(o) => setConfirmOpen(o ? record.id : null)}>
+                            <PopoverTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
-                      >
-                        <FileText className="h-4 w-4" />
-                      </Button>
+                                className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                onClick={(e) => { e.stopPropagation(); setConfirmOpen(record.id) }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64">
+                              <div className="space-y-3">
+                                <p className="text-sm">Bu zaman kaydını silmek istediğinize emin misiniz?</p>
+                                <div className="flex justify-end gap-2">
+                                  <Button variant="outline" size="sm" onClick={() => setConfirmOpen(null)}>Vazgeç</Button>
+                                  <Button size="sm" className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700" onClick={() => { if (confirmOpen != null) onDelete?.(confirmOpen); setConfirmOpen(null) }}>Sil</Button>
+                                </div>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      </TableCell>
+                    </>
+                  ) : (
+                    <>
+                      <TableCell className="font-bold py-6">{record.date}</TableCell>
+                      <TableCell className="text-gray-600 font-medium">{record.startTime}</TableCell>
+                      <TableCell className="text-gray-600 font-medium">{record.endTime}</TableCell>
+                      <TableCell>
+                        <Badge className={`border-0 px-3 py-1 ${getDurationBadgeColor(record.duration)}`}>{record.duration} saat</Badge>
+                      </TableCell>
+                      <TableCell className="text-gray-600 font-medium">{record.description}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-start">
+                          <Switch
+                            checked={record.billable}
+                            onCheckedChange={(checked) => { onUpdate?.({ ...record, billable: checked }) }}
+                            className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-amber-500 data-[state=checked]:to-yellow-500 focus-visible:ring-2 focus-visible:ring-amber-300"
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Popover open={confirmOpen === record.id} onOpenChange={(o) => setConfirmOpen(o ? record.id : null)}>
+                            <PopoverTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
                         className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                onClick={(e) => { e.stopPropagation(); setConfirmOpen(record.id) }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64">
+                              <div className="space-y-3">
+                                <p className="text-sm">Bu zaman kaydını silmek istediğinize emin misiniz?</p>
+                                <div className="flex justify-end gap-2">
+                                  <Button variant="outline" size="sm" onClick={() => setConfirmOpen(null)}>Vazgeç</Button>
+                                  <Button size="sm" className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700" onClick={() => { if (confirmOpen != null) onDelete?.(confirmOpen); setConfirmOpen(null) }}>Sil</Button>
+                                </div>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                     </div>
                   </TableCell>
+                    </>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

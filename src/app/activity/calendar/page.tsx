@@ -489,7 +489,8 @@ function EventModal({
             aria-labelledby="billable-label"
             checked={billable}
             onCheckedChange={setBillable}
-            className="data-[state=checked]:bg-green-600 focus-visible:ring-green-500/50"
+            className="h-6 w-11 data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-blue-100 focus-visible:ring-blue-500/40"
+            thumbClassName="size-5 bg-white shadow-sm"
           />
         </div>
 

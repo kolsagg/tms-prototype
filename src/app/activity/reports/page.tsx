@@ -277,7 +277,7 @@ export default function LeaveReportsPage() {
       <PageHeader
         title="İzin/Rapor Talebi"
         subtitle="Personel izin ve rapor taleplerini yönetin"
-        status="Aktif liste"
+ //       status="Aktif liste"
       />
       <div className="mb-4 flex justify-end">
         <Button className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg" onClick={openCreateForm}>

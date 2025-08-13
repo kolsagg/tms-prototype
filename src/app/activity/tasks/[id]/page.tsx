@@ -10,54 +10,10 @@ import { FileUploadCard } from "@/components/time-tracking/file-upload-card"
 import { TimeEntryForm } from "@/components/time-tracking/time-entry-form"
 import { TimeRecordsTable } from "@/components/time-tracking/time-records-table"
 import type { Project, TimeRecord } from "@/types/project"
+import { mockTasks, timeRecordsByTaskId } from "@/lib/mock-data"
 import { ArrowLeft } from "lucide-react"
 
-type Task = {
-  id: number
-  title: string
-  project: string
-  priority: "low" | "medium" | "high"
-  status: "pending" | "in-progress" | "completed"
-  startDate: string
-  endDate: string
-  estimateHours: number
-  completion: number
-  assignedAt: string
-  assignee: string
-  description: string
-}
-
-const mockTasks: Task[] = [
-  {
-    id: 1,
-    title: "ABAP kodlarının revizesi",
-    project: "IATCO DESTEK / Destek Hizmetleri",
-    priority: "high",
-    status: "in-progress",
-    startDate: "02.08.2025",
-    endDate: "03.08.2025",
-    estimateHours: 10,
-    completion: 10,
-    assignedAt: "02.08.2025 10:42",
-    assignee: "Emre Kolunsağ",
-    description:
-      "CR maddelerinde müşteri tarafından talep edilen ABAP hatalarının düzeltilmesi ve optimizasyonu.",
-  },
-  {
-    id: 2,
-    title: "test",
-    project: "IATCO DESTEK / Geliştirme2",
-    priority: "medium",
-    status: "in-progress",
-    startDate: "02.08.2025",
-    endDate: "06.08.2025",
-    estimateHours: 10,
-    completion: 100,
-    assignedAt: "02.08.2025 11:13",
-    assignee: "Emre Kolunsağ",
-    description: "Modül üzerinde genel geliştirmeler ve testler.",
-  },
-]
+// Görev verileri paylaşılan mock kaynaktan
 
 export default function TaskDetailPage() {
   const router = useRouter()
@@ -70,10 +26,19 @@ export default function TaskDetailPage() {
     id: String(task.id),
     name: task.project,
     type: task.title,
-    assignee: task.assignee,
+    assignee: task.assignee ?? "",
     priority: task.priority,
-    status: task.status,
-    description: task.description,
+    status: (() => {
+      const [sd, sm, sy] = task.startDate.split(".")
+      const [ed, em, ey] = task.endDate.split(".")
+      const start = new Date(Number(sy), Number(sm) - 1, Number(sd))
+      const end = new Date(Number(ey), Number(em) - 1, Number(ed))
+      const now = new Date()
+      if (now > end) return "completed"
+      if (now >= start && now <= end) return "in-progress"
+      return "pending"
+    })(),
+    description: task.description ?? "",
     startDate: task.startDate,
     endDate: task.endDate,
     estimatedHours: task.estimateHours,
@@ -81,26 +46,7 @@ export default function TaskDetailPage() {
     completionPercentage: 0,
   }
 
-  const mockTimeRecords: TimeRecord[] = [
-    {
-      id: 1,
-      date: "2025-08-02",
-      startTime: "09:00",
-      endTime: "15:00",
-      duration: 6,
-      description: "Genel çalışma ve kod incelemesi",
-      billable: true,
-    },
-    {
-      id: 2,
-      date: "2025-08-02",
-      startTime: "09:00",
-      endTime: "13:00",
-      duration: 4,
-      description: "Kod revizyonu ve test",
-      billable: true,
-    },
-  ]
+  const mockTimeRecords: TimeRecord[] = timeRecordsByTaskId[id] ?? []
 
   function computeDurationHours(start: string, end: string): number {
     const [sh, sm] = start.split(":").map(Number)
@@ -152,7 +98,12 @@ export default function TaskDetailPage() {
         </div>
         <div className="space-y-8">
           <TimeEntryForm onAdd={addRecord} />
-          <TimeRecordsTable records={records} onDelete={deleteRecord} onUpdate={updateRecord} />
+          <TimeRecordsTable
+            records={records}
+            onDelete={deleteRecord}
+            onUpdate={updateRecord}
+            completionPercentage={enrichedProject.completionPercentage}
+          />
         </div>
       </>
     )
@@ -171,7 +122,6 @@ export default function TaskDetailPage() {
       <PageHeader
         title="Zaman Takibi"
         subtitle={task.title}
-        status="Aktif çalışma"
         actionButton={{ label: "Geri Dön", icon: ArrowLeft, onClick: () => router.push("/activity/tasks") }}
       />
 

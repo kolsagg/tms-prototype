@@ -12,46 +12,9 @@ import { Badge } from "@/components/ui/badge"
 import { Filter, FileText, ChevronLeft, ChevronRight, RotateCcw, ChevronUp, ChevronDown, FileDown, FileSpreadsheet, Printer } from "lucide-react"
 import Link from "next/link"
 import { useMemo, useState } from "react"
+import { computeTaskCompletionPercentage, mockTasks, type Task } from "@/lib/mock-data"
 
-type Task = {
-  id: number
-  title: string
-  project: string
-  priority: "low" | "medium" | "high"
-  status: "pending" | "in-progress" | "completed"
-  startDate: string
-  endDate: string
-  estimateHours: number
-  completion: number
-  assignedAt: string
-}
-
-const mockTasks: Task[] = [
-  {
-    id: 1,
-    title: "ABAP kodlarının revizesi",
-    project: "IATCO DESTEK / Destek Hizmetleri",
-    priority: "high",
-    status: "in-progress",
-    startDate: "02.08.2025",
-    endDate: "03.08.2025",
-    estimateHours: 10,
-    completion: 100,
-    assignedAt: "02.08.2025 10:42",
-  },
-  {
-    id: 2,
-    title: "test",
-    project: "IATCO DESTEK / Geliştirme2",
-    priority: "medium",
-    status: "in-progress",
-    startDate: "02.08.2025",
-    endDate: "06.08.2025",
-    estimateHours: 10,
-    completion: 100,
-    assignedAt: "02.08.2025 11:13",
-  },
-]
+// Veriler paylaşılan mock kaynaktan geliyor
 
 function priorityBadge(priority: Task["priority"]) {
   if (priority === "high") return "bg-gradient-to-r from-orange-100 to-red-100 text-orange-700"
@@ -98,6 +61,15 @@ export default function TasksPage() {
     })
   }, [appliedProject, appliedFrom, appliedTo])
 
+  const getDateBasedStatusLabel = (startDate: string, endDate: string) => {
+    const [ed, em, ey] = endDate.split(".")
+    const end = new Date(Number(ey), Number(em) - 1, Number(ed))
+    const now = new Date()
+    return now > end ? "Bitti" : "Devam Ediyor"
+  }
+
+  const getCompletionPercentage = (task: Task) => computeTaskCompletionPercentage(task.id, task.estimateHours)
+
   const applyFilters = () => {
     setAppliedProject(draftProject === "all" ? "" : draftProject)
     setAppliedFrom(draftFrom)
@@ -125,7 +97,9 @@ export default function TasksPage() {
   return (
     <MainLayout contentClassName="max-w-none">
       <Breadcrumb items={breadcrumbItems} />
-      <PageHeader title="Görev Listesi" />
+      <PageHeader title="Görev Listesi"
+       subtitle="Görevlerinizi filtreleyin, arayın ve yönetin"
+      />
 
       {/* Filtrelenebilir Panel */}
       <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-md overflow-hidden mb-8">
@@ -225,12 +199,10 @@ export default function TasksPage() {
                         {t.priority === "high" ? "Yüksek" : t.priority === "medium" ? "Orta" : "Düşük"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-gray-600 font-medium">
-                      {t.status === "in-progress" ? "Devam Ediyor" : t.status === "pending" ? "Bekliyor" : "Tamamlandı"}
-                    </TableCell>
+                    <TableCell className="text-gray-600 font-medium">{getDateBasedStatusLabel(t.startDate, t.endDate)}</TableCell>
                     <TableCell className="text-gray-600 font-medium">{t.startDate} - {t.endDate}</TableCell>
                     <TableCell className="text-gray-600 font-medium">{t.estimateHours}</TableCell>
-                    <TableCell className="text-gray-600 font-medium">{t.completion}</TableCell>
+                    <TableCell className="text-gray-600 font-medium">{getCompletionPercentage(t)}</TableCell>
                     <TableCell className="text-gray-600 font-medium">{t.assignedAt}</TableCell>
                     <TableCell className="text-right">
                       <Link href={`/activity/tasks/${t.id}`}>

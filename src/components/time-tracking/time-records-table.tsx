@@ -9,7 +9,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Clock, Search, Trash2, ChevronLeft, ChevronRight } from "lucide-react"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 interface TimeRecord {
   id: number
@@ -25,13 +24,15 @@ interface TimeRecordsTableProps {
   records: TimeRecord[]
   onDelete?: (id: number) => void
   onUpdate?: (record: TimeRecord) => void
+  completionPercentage?: number
 }
 
-export function TimeRecordsTable({ records, onDelete, onUpdate }: TimeRecordsTableProps) {
+export function TimeRecordsTable({ records, onDelete, onUpdate, completionPercentage }: TimeRecordsTableProps) {
   const [query, setQuery] = useState("")
   const [confirmOpen, setConfirmOpen] = useState<null | number>(null)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editDraft, setEditDraft] = useState<Partial<TimeRecord>>({})
+  const [showDeleted, setShowDeleted] = useState(false)
 
   const getDurationBadgeColor = (duration: number) => {
     if (duration >= 6) return "bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700"
@@ -135,27 +136,14 @@ export function TimeRecordsTable({ records, onDelete, onUpdate }: TimeRecordsTab
                     <div className="flex items-center justify-end gap-2">
                           <Button size="sm" className="h-9 px-3" onClick={(e) => { e.stopPropagation(); commitEdit() }}>Kaydet</Button>
                           <Button variant="outline" size="sm" className="h-9 px-3" onClick={(e) => { e.stopPropagation(); setEditingId(null); setEditDraft({}) }}>Vazgeç</Button>
-                          <Popover open={confirmOpen === record.id} onOpenChange={(o) => setConfirmOpen(o ? record.id : null)}>
-                            <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                                className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
-                                onClick={(e) => { e.stopPropagation(); setConfirmOpen(record.id) }}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-64">
-                              <div className="space-y-3">
-                                <p className="text-sm">Bu zaman kaydını silmek istediğinize emin misiniz?</p>
-                                <div className="flex justify-end gap-2">
-                                  <Button variant="outline" size="sm" onClick={() => setConfirmOpen(null)}>Vazgeç</Button>
-                                  <Button size="sm" className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700" onClick={() => { if (confirmOpen != null) onDelete?.(confirmOpen); setConfirmOpen(null) }}>Sil</Button>
-                                </div>
-                              </div>
-                            </PopoverContent>
-                          </Popover>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                            onClick={(e) => { e.stopPropagation(); setConfirmOpen(record.id) }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     </>
@@ -179,27 +167,14 @@ export function TimeRecordsTable({ records, onDelete, onUpdate }: TimeRecordsTab
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Popover open={confirmOpen === record.id} onOpenChange={(o) => setConfirmOpen(o ? record.id : null)}>
-                            <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
-                                onClick={(e) => { e.stopPropagation(); setConfirmOpen(record.id) }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-64">
-                              <div className="space-y-3">
-                                <p className="text-sm">Bu zaman kaydını silmek istediğinize emin misiniz?</p>
-                                <div className="flex justify-end gap-2">
-                                  <Button variant="outline" size="sm" onClick={() => setConfirmOpen(null)}>Vazgeç</Button>
-                                  <Button size="sm" className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700" onClick={() => { if (confirmOpen != null) onDelete?.(confirmOpen); setConfirmOpen(null) }}>Sil</Button>
-                                </div>
-                              </div>
-                            </PopoverContent>
-                          </Popover>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                            onClick={(e) => { e.stopPropagation(); setConfirmOpen(record.id) }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                     </div>
                   </TableCell>
                     </>
@@ -242,6 +217,44 @@ export function TimeRecordsTable({ records, onDelete, onUpdate }: TimeRecordsTab
           </div>
         </div>
       </CardContent>
+      {confirmOpen != null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" onClick={() => setConfirmOpen(null)} />
+          <div className="relative z-10 w-full max-w-md mx-4">
+            <div className="rounded-2xl bg-white shadow-2xl border border-gray-200">
+              <div className="p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-2 text-center">Emin misiniz?</h3>
+                <p className="text-sm text-gray-600 text-center mb-6">Bu aktivite kaydını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p>
+                <div className="flex justify-end gap-3">
+                  <Button variant="outline" onClick={() => setConfirmOpen(null)}>Vazgeç</Button>
+                  <Button
+                    className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700"
+                    onClick={() => {
+                      if (confirmOpen != null) onDelete?.(confirmOpen)
+                      setConfirmOpen(null)
+                      setShowDeleted(true)
+                      setTimeout(() => setShowDeleted(false), 2000)
+                    }}
+                  >
+                    Sil
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleted && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" onClick={() => setShowDeleted(false)} />
+          <div className="relative z-10 w-full max-w-sm mx-4">
+            <div className="px-4 py-3 rounded-xl shadow-2xl bg-emerald-600 text-white text-sm font-medium text-center">
+              Silme işlemi tamamlandı
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   )
 }

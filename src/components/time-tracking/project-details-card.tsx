@@ -32,6 +32,19 @@ export function ProjectDetailsCard({ project }: ProjectDetailsCardProps) {
     }
   }
 
+  const getPriorityExclamations = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "!!!"
+      case "medium":
+        return "!!"
+      case "low":
+        return "!"
+      default:
+        return "!"
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
@@ -52,7 +65,7 @@ export function ProjectDetailsCard({ project }: ProjectDetailsCardProps) {
           <CardTitle className="text-2xl font-bold text-gray-900">Proje Detayları</CardTitle>
           <div className="flex gap-3">
             <Badge className={`border-0 px-4 py-2 text-sm font-medium ${getPriorityColor(project.priority)}`}>
-              🔥 {project.priority === "high" ? "Yüksek" : project.priority === "medium" ? "Orta" : "Düşük"} Öncelik
+              {getPriorityExclamations(project.priority)} {project.priority === "high" ? "Yüksek" : project.priority === "medium" ? "Orta" : "Düşük"} Öncelik
             </Badge>
             <Badge className={`border-0 px-4 py-2 text-sm font-medium ${getStatusColor(project.status)}`}>
               ⚡{" "}

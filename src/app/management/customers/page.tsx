@@ -1,5 +1,6 @@
 "use client";
 
+import { ManagementMainLayout } from "@/components/management/management-main-layout";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,7 +47,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 type Customer = {
   id: number;
   name: string;
@@ -161,13 +162,23 @@ export default function ManagementCustomersPage() {
         header: "İlişkili Müşteri",
         cell: ({ getValue }) => <span>{String(getValue() || "-")}</span>,
       },
-      { accessorKey: "phone", header: "Telefon", cell: ({ getValue }) => <span>{String(getValue() || "-")}</span> },
-      { accessorKey: "email", header: "E-Posta", cell: ({ getValue }) => <span>{String(getValue() || "-")}</span> },
+      {
+        accessorKey: "phone",
+        header: "Telefon",
+        cell: ({ getValue }) => <span>{String(getValue() || "-")}</span>,
+      },
+      {
+        accessorKey: "email",
+        header: "E-Posta",
+        cell: ({ getValue }) => <span>{String(getValue() || "-")}</span>,
+      },
       {
         accessorKey: "address",
         header: "Adres",
         cell: ({ getValue }) => (
-          <span className="block max-w-[520px] whitespace-nowrap overflow-hidden text-ellipsis">{String(getValue() || "-")}</span>
+          <span className="block max-w-[520px] whitespace-nowrap overflow-hidden text-ellipsis">
+            {String(getValue() || "-")}
+          </span>
         ),
       },
       {
@@ -225,17 +236,18 @@ export default function ManagementCustomersPage() {
     table.setPageIndex(0);
   };
 
+  const breadcrumbItems = [{ label: "Anasayfa", href: "/management/dashboard" }, { label: "Müşteri Listesi" }]
+
   return (
-    <>
-      <PageHeader
-        title="Müşteri Listesi"
-        subtitle="Anasayfa / Müşteri Listesi"
-      />
+    <ManagementMainLayout>
+      <Breadcrumb items={breadcrumbItems} />
+
+      <PageHeader title="Müşteri Listesi" subtitle="Müşterileri görüntüleyin ve yönetin" />
 
       <Card className="bg-white/90 backdrop-blur border-gray-100">
         <CardHeader className="border-b">
           <CardTitle className="text-base font-semibold">
-            Filtrelenebilir Panel
+            Filtreler
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -313,13 +325,23 @@ export default function ManagementCustomersPage() {
                     <SelectValue placeholder="10" />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
-                    <SelectItem value="10" className="hover:bg-gray-100">10</SelectItem>
-                    <SelectItem value="25" className="hover:bg-gray-100">25</SelectItem>
-                    <SelectItem value="50" className="hover:bg-gray-100">50</SelectItem>
-                    <SelectItem value="100" className="hover:bg-gray-100">100</SelectItem>
+                    <SelectItem value="10" className="hover:bg-gray-100">
+                      10
+                    </SelectItem>
+                    <SelectItem value="25" className="hover:bg-gray-100">
+                      25
+                    </SelectItem>
+                    <SelectItem value="50" className="hover:bg-gray-100">
+                      50
+                    </SelectItem>
+                    <SelectItem value="100" className="hover:bg-gray-100">
+                      100
+                    </SelectItem>
                   </SelectContent>
                 </Select>
-                <span className="text-sm text-muted-foreground">kaydı göster</span>
+                <span className="text-sm text-muted-foreground">
+                  kaydı göster
+                </span>
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
@@ -338,13 +360,28 @@ export default function ManagementCustomersPage() {
                 </div>
                 <Separator orientation="vertical" className="h-6" />
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" aria-label="Dışa aktar" className="hover:bg-gray-100">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Dışa aktar"
+                    className="hover:bg-gray-100"
+                  >
                     <FileDown className="size-4" />
                   </Button>
-                  <Button variant="outline" size="icon" aria-label="Yazdır" className="hover:bg-gray-100">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Yazdır"
+                    className="hover:bg-gray-100"
+                  >
                     <Printer className="size-4" />
                   </Button>
-                  <Button variant="outline" size="icon" aria-label="Yenile" className="hover:bg-gray-100">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Yenile"
+                    className="hover:bg-gray-100"
+                  >
                     <RefreshCcw className="size-4" />
                   </Button>
                 </div>
@@ -400,7 +437,10 @@ export default function ManagementCustomersPage() {
                             : ""
                         }
                       >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -436,10 +476,14 @@ export default function ManagementCustomersPage() {
                   variant="outline"
                   size="icon"
                   aria-current="page"
-                  aria-label={`Sayfa ${table.getState().pagination.pageIndex + 1}`}
+                  aria-label={`Sayfa ${
+                    table.getState().pagination.pageIndex + 1
+                  }`}
                   disabled
                 >
-                  <span className="text-sm">{table.getState().pagination.pageIndex + 1}</span>
+                  <span className="text-sm">
+                    {table.getState().pagination.pageIndex + 1}
+                  </span>
                 </Button>
                 <Button
                   variant="outline"
@@ -454,6 +498,6 @@ export default function ManagementCustomersPage() {
           </div>
         </CardContent>
       </Card>
-    </>
+    </ManagementMainLayout>
   );
 }

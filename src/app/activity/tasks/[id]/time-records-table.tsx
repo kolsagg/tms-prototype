@@ -27,7 +27,7 @@ interface TimeRecordsTableProps {
   completionPercentage?: number
 }
 
-export function TimeRecordsTable({ records, onDelete, onUpdate, completionPercentage }: TimeRecordsTableProps) {
+export function TimeRecordsTable({ records, onDelete, onUpdate }: TimeRecordsTableProps) {
   const [query, setQuery] = useState("")
   const [confirmOpen, setConfirmOpen] = useState<null | number>(null)
   const [editingId, setEditingId] = useState<number | null>(null)

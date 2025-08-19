@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Calendar, List, BarChart3, ChevronLeft, ChevronRight } from "lucide-react"
+import { LayoutDashboard, Calendar, List, Split, ChevronLeft, ChevronRight } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -30,9 +30,9 @@ const navigationItems = [
     icon: List,
   },
   {
-    name: "Raporlar",
+    name: "İzin ve Raporlar",
     href: "/activity/reports",
-    icon: BarChart3,
+    icon: Split,
   },
 ]
 

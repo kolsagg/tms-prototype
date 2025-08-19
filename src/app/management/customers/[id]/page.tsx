@@ -30,8 +30,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { ArrowLeft, Plus, Pencil, Trash2, Eye } from "lucide-react";
 import { mockCustomers, getCustomerDetails } from "@/lib/mock-data";
-import { ContactFormDialog } from "@/components/management/contact-form-dialog";
-import { InvoiceFormDialog } from "@/components/management/invoice-form-dialog";
+import { ContactFormDialog } from "@/app/management/customers/[id]/contact-form-dialog";
+import { InvoiceFormDialog } from "@/app/management/customers/[id]/invoice-form-dialog";
 
 interface Contact {
     id: number;

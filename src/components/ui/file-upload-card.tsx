@@ -23,7 +23,7 @@ export function FileUploadCard() {
             size="sm"
             className="border-blue-200 bg-white/80 hover:bg-blue-50 hover:border-blue-300 transition-all"
           >
-            📁 Dosya Seçin
+            Dosya Seçin
           </Button>
         </div>
         <div className="mt-4 text-xs text-gray-500 text-center">

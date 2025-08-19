@@ -61,6 +61,7 @@ Code Style and Structure
 -   Prefer iteration and modularization over code duplication.
 -   Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
 -   Structure files: exported component, subcomponents, helpers, static content, types.
+-   When creating a page, create the things you will do inside it as separate components in that folder and call them in "page.tsx".
 
 Naming Conventions
 

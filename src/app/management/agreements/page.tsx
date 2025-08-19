@@ -1,6 +1,6 @@
 "use client"
 
-import { MainLayout } from "@/components/layout/main-layout"
+import { ManagementMainLayout } from "@/components/management/management-main-layout"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { PageHeader } from "@/components/ui/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,38 +9,31 @@ import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Filter, FileText, ChevronLeft, ChevronRight, RotateCcw, ChevronUp, ChevronDown, FileDown, FileSpreadsheet, Printer } from "lucide-react"
-import Link from "next/link"
-import { useMemo, useState } from "react"
-import { computeTaskCompletionPercentage, mockTasks, type Task } from "@/lib/mock-data"
+import { Filter, Eye, ChevronLeft, ChevronRight, RotateCcw, ChevronUp, ChevronDown, FileDown, FileSpreadsheet, Printer, Pencil, Trash2, Plus } from "lucide-react"
+import { useMemo, useState, useCallback } from "react"
+import { useRouter } from "next/navigation"
+import { mockAgreements, type Agreement } from "@/lib/mock-data"
+import { AgreementFormDialog } from "./agreement-form-dialog"
 
-// Veriler paylaşılan mock kaynaktan geliyor
-
-function priorityBadge(priority: Task["priority"]) {
-  if (priority === "high") return "bg-gradient-to-r from-orange-100 to-red-100 text-orange-700"
-  if (priority === "medium") return "bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700"
-  return "bg-gradient-to-r from-green-100 to-emerald-100 text-green-700"
-}
-
-function priorityExclamations(priority: Task["priority"]) {
-  if (priority === "high") return "!!!"
-  if (priority === "medium") return "!!"
-  return "!"
-}
-
-export default function TasksPage() {
+export default function AgreementsPage() {
+  const router = useRouter()
   const [filterOpen, setFilterOpen] = useState(true)
   // Draft (UI) filter values
-  const [draftProject, setDraftProject] = useState("all")
+  const [draftCustomer, setDraftCustomer] = useState("all")
   const [draftFrom, setDraftFrom] = useState("") // YYYY-MM-DD
   const [draftTo, setDraftTo] = useState("") // YYYY-MM-DD
   // Applied filter values (used to filter the table)
-  const [appliedProject, setAppliedProject] = useState("")
+  const [appliedCustomer, setAppliedCustomer] = useState("")
   const [appliedFrom, setAppliedFrom] = useState("")
   const [appliedTo, setAppliedTo] = useState("")
+  
+  // Dialog states
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingAgreement, setEditingAgreement] = useState<Agreement | undefined>()
+  const [isEditMode, setIsEditMode] = useState(false)
 
-  const filteredTasks = useMemo(() => {
-    const query = appliedProject.trim().toLowerCase()
+  const filteredAgreements = useMemo(() => {
+    const query = appliedCustomer.trim().toLowerCase()
     const parseDDMMYYYY = (s: string) => {
       const [d, m, y] = s.split(".")
       return new Date(Number(y), Number(m) - 1, Number(d))
@@ -51,54 +44,69 @@ export default function TasksPage() {
     }
     const from = appliedFrom ? parseYYYYMMDD(appliedFrom) : undefined
     const to = appliedTo ? parseYYYYMMDD(appliedTo) : undefined
-    return mockTasks.filter((t) => {
-      const matchesQuery = query.length === 0 || t.project.toLowerCase() === query
-      const taskStart = parseDDMMYYYY(t.startDate)
-      const taskEnd = parseDDMMYYYY(t.endDate)
-      const matchesFrom = !from || taskStart >= from
-      const matchesTo = !to || taskEnd <= to
+    return mockAgreements.filter((a) => {
+      const matchesQuery = query.length === 0 || a.customerInfo.toLowerCase().includes(query)
+      const agreementEnd = parseDDMMYYYY(a.endDate)
+      const matchesFrom = !from || agreementEnd >= from
+      const matchesTo = !to || agreementEnd <= to
       return matchesQuery && matchesFrom && matchesTo
     })
-  }, [appliedProject, appliedFrom, appliedTo])
-
-  const getDateBasedStatusLabel = (startDate: string, endDate: string) => {
-    const [ed, em, ey] = endDate.split(".")
-    const end = new Date(Number(ey), Number(em) - 1, Number(ed))
-    const now = new Date()
-    return now > end ? "Bitti" : "Devam Ediyor"
-  }
-
-  const getCompletionPercentage = (task: Task) => computeTaskCompletionPercentage(task.id, task.estimateHours)
+  }, [appliedCustomer, appliedFrom, appliedTo])
 
   const applyFilters = () => {
-    setAppliedProject(draftProject === "all" ? "" : draftProject)
+    setAppliedCustomer(draftCustomer === "all" ? "" : draftCustomer)
     setAppliedFrom(draftFrom)
     setAppliedTo(draftTo)
   }
 
   const resetFilters = () => {
-    setDraftProject("all")
+    setDraftCustomer("all")
     setDraftFrom("")
     setDraftTo("")
-    setAppliedProject("")
+    setAppliedCustomer("")
     setAppliedFrom("")
     setAppliedTo("")
   }
 
-  const userProjects = useMemo(() => {
-    const unique = Array.from(new Set(mockTasks.map((t) => t.project)))
+  const uniqueCustomers = useMemo(() => {
+    const unique = Array.from(new Set(mockAgreements.map((a) => a.customerInfo)))
     return unique
   }, [])
+
+  const handleNewAgreement = useCallback(() => {
+    setEditingAgreement(undefined)
+    setIsEditMode(false)
+    setIsDialogOpen(true)
+  }, [])
+
+  const handleEditAgreement = useCallback((agreement: Agreement) => {
+    setEditingAgreement(agreement)
+    setIsEditMode(true)
+    setIsDialogOpen(true)
+  }, [])
+
+  const getStatusBadgeClass = (status: Agreement["status"]) => {
+    if (status === "active") return "bg-gradient-to-r from-green-100 to-emerald-100 text-green-700"
+    if (status === "expired") return "bg-gradient-to-r from-orange-100 to-red-100 text-orange-700"
+    return "bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700"
+  }
+
+  const getStatusText = (status: Agreement["status"]) => {
+    if (status === "active") return "Devam Ediyor"
+    if (status === "expired") return "Süresi Doldu"
+    return "Taslak"
+  }
+
   const breadcrumbItems = [
     { label: "Anasayfa", href: "/" },
-    { label: "İş Listesi" },
+    { label: "Sözleşme Listesi" },
   ]
 
   return (
-    <MainLayout contentClassName="max-w-none">
+    <ManagementMainLayout contentClassName="max-w-none">
       <Breadcrumb items={breadcrumbItems} />
-      <PageHeader title="Görev Listesi"
-       subtitle="Görevlerinizi filtreleyin, arayın ve yönetin"
+      <PageHeader title="Sözleşme Listesi"
+       subtitle="Sözleşmelerinizi filtreleyin, arayın ve yönetin"
       />
 
       {/* Filtrelenebilir Panel */}
@@ -116,25 +124,25 @@ export default function TasksPage() {
           <CardContent className="p-6">
             <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
               <div className="flex items-center gap-3">
-                <Select value={draftProject} onValueChange={(v) => setDraftProject(v)}>
+                <Select value={draftCustomer} onValueChange={(v) => setDraftCustomer(v)}>
                   <SelectTrigger className="w-80 border-gray-200 bg-white">
-                    <SelectValue placeholder="Proje seçin" />
+                    <SelectValue placeholder="Müşteri seçin" />
                   </SelectTrigger>
                   <SelectContent className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl">
-                    <SelectItem value="all">Tüm Projeler</SelectItem>
-                    {userProjects.map((p) => (
-                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                    <SelectItem value="all">Tüm Müşteriler</SelectItem>
+                    {uniqueCustomers.map((customer) => (
+                      <SelectItem key={customer} value={customer}>{customer}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl p-2 border border-gray-200">
-                  <span className="text-sm text-gray-600">Başlangıç</span>
+                  <span className="text-sm text-gray-600">Bitiş Başlangıç</span>
                   <Input type="date" className="h-9 w-40" value={draftFrom} onChange={(e) => setDraftFrom(e.target.value)} />
                 </div>
                 <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl p-2 border border-gray-200">
-                  <span className="text-sm text-gray-600">Bitiş</span>
+                  <span className="text-sm text-gray-600">Bitiş Son</span>
                   <Input type="date" className="h-9 w-40" value={draftTo} onChange={(e) => setDraftTo(e.target.value)} />
                 </div>
                 <Button variant="outline" className="border-gray-200 bg-white/80 gap-2" onClick={applyFilters}>
@@ -151,11 +159,11 @@ export default function TasksPage() {
         )}
       </Card>
 
-      {/* Görev Listesi */}
+      {/* Sözleşme Listesi */}
       <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-md overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-100/50 pb-6">
           <div className="flex items-center justify-between gap-4">
-            <CardTitle className="text-2xl font-bold text-gray-900">Görev Listesi</CardTitle>
+            <CardTitle className="text-2xl font-bold text-gray-900">Sözleşme Listesi</CardTitle>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" className="border-gray-200 bg-white/80 gap-2" onClick={() => console.log("export-pdf") }>
                 <FileDown className="h-4 w-4" />
@@ -169,6 +177,13 @@ export default function TasksPage() {
                 <Printer className="h-4 w-4" />
                 Yazdır
               </Button>
+              <Button 
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg gap-2" 
+                onClick={handleNewAgreement}
+              >
+                <Plus className="h-4 w-4" />
+                Yeni Kayıt
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -177,39 +192,48 @@ export default function TasksPage() {
             <Table>
               <TableHeader>
                 <TableRow className="border-gray-100 bg-gradient-to-r from-gray-50/50 to-slate-50/50">
-                  <TableHead className="font-bold text-gray-700 h-14">Başlık</TableHead>
-                  <TableHead className="font-bold text-gray-700">Proje</TableHead>
-                  <TableHead className="font-bold text-gray-700">Öncelik</TableHead>
-                  <TableHead className="font-bold text-gray-700">Durum</TableHead>
-                  <TableHead className="font-bold text-gray-700">Başlangıç–Bitiş</TableHead>
-                  <TableHead className="font-bold text-gray-700">Tahmini Süre (h)</TableHead>
-                  <TableHead className="font-bold text-gray-700">Tamamlanma %</TableHead>
-                  <TableHead className="font-bold text-gray-700">Atanma Tarihi</TableHead>
+                  <TableHead className="font-bold text-gray-700 h-14">Müşteri Bilgisi</TableHead>
+                  <TableHead className="font-bold text-gray-700">Sözleşme Numarası</TableHead>
+                  <TableHead className="font-bold text-gray-700">Başlangıç Tarihi</TableHead>
+                  <TableHead className="font-bold text-gray-700">Bitiş Tarihi</TableHead>
+                  <TableHead className="font-bold text-gray-700">Sözleşme Durumu</TableHead>
                   <TableHead className="font-bold text-gray-700 text-right">İşlemler</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTasks.map((t) => (
-                  <TableRow key={t.id} className="border-gray-50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-indigo-50/30">
-                    <TableCell className="font-bold py-6">{t.title}</TableCell>
-                    <TableCell className="text-gray-600 font-medium">{t.project}</TableCell>
+                {filteredAgreements.map((agreement) => (
+                  <TableRow key={agreement.id} className="border-gray-50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-indigo-50/30">
+                    <TableCell className="font-bold py-6">{agreement.customerInfo}</TableCell>
+                    <TableCell className="text-gray-600 font-mono font-medium">{agreement.agreementNumber}</TableCell>
+                    <TableCell className="text-gray-600 font-medium">{agreement.startDate}</TableCell>
+                    <TableCell className="text-gray-600 font-medium">{agreement.endDate}</TableCell>
                     <TableCell>
-                      <Badge className={`border-0 px-3 py-1 ${priorityBadge(t.priority)}`}>
-                        <span className="mr-1">{priorityExclamations(t.priority)}</span>
-                        {t.priority === "high" ? "Yüksek" : t.priority === "medium" ? "Orta" : "Düşük"}
+                      <Badge className={`border-0 px-3 py-1 ${getStatusBadgeClass(agreement.status)}`}>
+                        {getStatusText(agreement.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-gray-600 font-medium">{getDateBasedStatusLabel(t.startDate, t.endDate)}</TableCell>
-                    <TableCell className="text-gray-600 font-medium">{t.startDate} - {t.endDate}</TableCell>
-                    <TableCell className="text-gray-600 font-medium">{t.estimateHours}</TableCell>
-                    <TableCell className="text-gray-600 font-medium">{getCompletionPercentage(t)}</TableCell>
-                    <TableCell className="text-gray-600 font-medium">{t.assignee}</TableCell>
                     <TableCell className="text-right">
-                      <Link href={`/activity/tasks/${t.id}`}>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg">
-                          <FileText className="h-4 w-4" />
+                      <div className="flex gap-2 justify-end">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-9 w-9 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                          onClick={() => router.push(`/management/agreements/${agreement.id}`)}
+                        >
+                          <Eye className="h-4 w-4" />
                         </Button>
-                      </Link>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-9 w-9 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"
+                          onClick={() => handleEditAgreement(agreement)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -245,8 +269,13 @@ export default function TasksPage() {
           </div>
         </CardContent>
       </Card>
-    </MainLayout>
+      
+      <AgreementFormDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        editingAgreement={editingAgreement}
+        isEditMode={isEditMode}
+      />
+    </ManagementMainLayout>
   )
 }
-
-

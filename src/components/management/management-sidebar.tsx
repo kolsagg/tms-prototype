@@ -41,7 +41,7 @@ const managementNav = [
   { name: "Ajanda", href: "/management/calendar", icon: Calendar },
   { name: "Müşteriler", href: "/management/customers", icon: Building2 },
   { name: "Sözleşmeler", href: "/management/agreements", icon: Handshake },
-  { name: "Projeler", href: "/management/project", icon: Briefcase },
+  { name: "Projeler", href: "/management/projects", icon: Briefcase },
   { name: "Görevler", href: "/management/tasks", icon: ListTodo },
   { name: "Kullanıcılar", href: "/management/users", icon: Users },
   { name: "İzin Yönetimi", href: "/management/permissions", icon: Split },
@@ -122,7 +122,7 @@ export const ManagementSidebar = ({
               const isActive = pathname === item.href;
               const isProjects = item.name === "Projeler";
               const isProjectsSectionActive = pathname.startsWith(
-                "/management/project"
+                "/management/projects"
               );
               const isActivity = item.name === "Aktivite";
               const isActivitySectionActive = pathname.startsWith("/activity");
@@ -155,7 +155,7 @@ export const ManagementSidebar = ({
                       >
                         <div className="flex flex-col">
                           <Link
-                            href="/management/project/management"
+                            href="/management/projects"
                             aria-label="Proje Yönetimi"
                             onClick={onClose}
                           >
@@ -163,7 +163,7 @@ export const ManagementSidebar = ({
                               variant="ghost"
                               className={cn(
                                 "w-full justify-start gap-3 h-9 px-3 rounded-md",
-                                pathname === "/management/project/management"
+                                pathname === "/management/projects"
                                   ? "text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md"
                                   : "text-gray-700 hover:text-gray-900 hover:bg-gray-100/80"
                               )}
@@ -199,14 +199,14 @@ export const ManagementSidebar = ({
                       <AccordionContent className="pt-2 pb-1">
                         <div className="pl-9 pr-2 space-y-1">
                           <Link
-                            href="/management/project/management"
+                            href="/management/projects"
                             aria-label="Proje Yönetimi"
                           >
                             <Button
                               variant="ghost"
                               className={cn(
                                 "w-full justify-start gap-3 h-9 px-3 rounded-md",
-                                pathname === "/management/project/management"
+                                pathname === "/management/projects"
                                   ? "text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md"
                                   : "text-gray-700 hover:text-gray-900 hover:bg-gray-100/80"
                               )}

@@ -30,7 +30,6 @@ import {
 } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
 import {
-  CalendarRange,
   Eye,
   FileDown,
   Pencil,
@@ -38,6 +37,7 @@ import {
   Printer,
   RefreshCcw,
   Search,
+  Star,
   Trash2,
 } from "lucide-react";
 import {
@@ -49,155 +49,99 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
-import { CustomerFormDialog } from "@/app/management/customers/customer-form-dialog";
-type Customer = {
-  id: number;
-  name: string;
-  relatedCustomer?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-};
+import { mockProjects, type Project } from "@/lib/mock-data";
 
-const initialCustomers: Customer[] = [
-  {
-    id: 1,
-    name: "ConcentIT Ltd. Şti.",
-    relatedCustomer: "",
-    phone: "0 545 842 0511",
-    email: "contact@concentit.com",
-    address:
-      "Küçükbakkalköy Mah. Vedat Günyol Cad, Defne Sk No:1 Kat:24 No: 2401-2402 Ataşehir/İstanbul",
-  },
-  {
-    id: 2,
-    name: "Ebtr",
-    phone: "0 530 076 3628",
-    email: "fatih.yasak@gmail.com",
-    address: "İstanbul",
-  },
-  {
-    id: 3,
-    name: "Erhan Danışmanlık Ltd.Şti.",
-    relatedCustomer: "ConcentIT Ltd. Şti.",
-    phone: "0 545 522 3575",
-    email: "erhan.polat@concentit.com",
-    address: "Lüleburgaz",
-  },
-  {
-    id: 4,
-    name: "İnci Gs Yuasa",
-    relatedCustomer: "NTT DATA Türkiye",
-    phone: "0 236 233 2510",
-    email: "info@inci.com.tr",
-    address:
-      "Starter Fabrika: Manisa OSB 2. Kısım Keçiliköy OSB Mahallesi Gaziler Caddesi No:6 45030 Yunusemre Manisa",
-  },
-  {
-    id: 5,
-    name: "Inervo",
-    relatedCustomer: "",
-    phone: "+90(532)384 6819",
-    email: "kutay.emeksiz@inervo.com",
-    address:
-      "Cevizli Mah. Tugay Yolu Cad. No: 69C İç Kapı: 222 Plaza AYM-OfficeLink Maltepe / İstanbul",
-  },
-  {
-    id: 6,
-    name: "Ismail Ali Abudawood Trading Company Limited",
-    relatedCustomer: "Inervo",
-    phone: "0 216 216 1616",
-    email: "info@iatco.com",
-    address:
-      "Sahara building 227, from 90th St. Fifth Settlement - New Cairo 11865 Cairo, Egypt.",
-  },
-  {
-    id: 7,
-    name: "Mayesoft",
-    phone: "+905(555)555 5555",
-    email: "YavuzKAYA@mayesoft.onmicrosoft.com",
-    address: "XXX XXX XXX",
-  },
-  {
-    id: 8,
-    name: "Ntt Data Türkiye",
-    phone: "0 216 600 0500",
-    email: "info@ntdata.com",
-    address:
-      "Nidakule Ataşehir Kuzey, İş Merkezi, Barbaros Mah. Begonya Sok. No:3/A Ataşehir TR-34746 İstanbul",
-  },
-  {
-    id: 9,
-    name: "Test",
-    phone: "0 216 518 8221",
-    email: "test@gmail.com",
-    address: "Selamiali, Bakkal Adem Sk. 2 A, 34664 Üsküdar/İstanbul",
-  },
-  {
-    id: 10,
-    name: "Uisap",
-    phone: "+90(542)558 1022",
-    email: "cem.dereli@uisap.com",
-    address:
-      "Cevizli Mah. Enderun Sokak Nursanlar C Blok Kapı No: 10 C Daire:9 Kartal / İSTANBUL",
-  },
-];
-
-export default function ManagementCustomersPage() {
+export default function ManagementProjectsPage() {
   const router = useRouter();
   const [globalFilter, setGlobalFilter] = useState("");
-  const [dateFrom, setDateFrom] = useState<string>("");
-  const [dateTo, setDateTo] = useState<string>("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [customers, setCustomers] = useState(initialCustomers);
-  const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [customerFilter, setCustomerFilter] = useState("all");
+  const [projects] = useState(mockProjects);
 
-  const columns = useMemo<ColumnDef<Customer>[]>(
+  // Get unique customers for filter dropdown
+  const uniqueCustomers = useMemo(() => {
+    const customers = Array.from(new Set(projects.map(p => p.customer)));
+    return customers.sort();
+  }, [projects]);
+
+  const columns = useMemo<ColumnDef<Project>[]>(
     () => [
       {
         accessorKey: "name",
-        header: "Adı",
+        header: "Proje Adı",
+        cell: ({ getValue, row }) => (
+          <div className="flex items-center gap-2 max-w-[200px]">
+            {row.original.isImportant && (
+              <Star className="size-4 text-yellow-500 fill-yellow-500" />
+            )}
+            <span className="font-medium whitespace-normal break-words">
+              {String(getValue())}
+            </span>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "projectNumber",
+        header: "Proje Numarası",
         cell: ({ getValue }) => (
-          <span className="font-medium whitespace-normal break-words block max-w-[260px]">
+          <span className="font-mono">{String(getValue())}</span>
+        ),
+      },
+      {
+        accessorKey: "customer",
+        header: "Müşteri",
+        cell: ({ getValue }) => (
+          <span className="block max-w-[250px] whitespace-normal break-words">
             {String(getValue())}
           </span>
         ),
       },
       {
-        accessorKey: "relatedCustomer",
-        header: "İlişkili Müşteri",
-        cell: ({ getValue }) => <span>{String(getValue() || "-")}</span>,
+        accessorKey: "status",
+        header: "Durum",
+        cell: ({ getValue }) => {
+          const status = String(getValue());
+          return (
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              status === "Aktif" 
+                ? "bg-green-100 text-green-800" 
+                : status === "Tamamlandı"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-gray-100 text-gray-800"
+            }`}>
+              {status}
+            </span>
+          );
+        },
       },
       {
-        accessorKey: "phone",
-        header: "Telefon",
-        cell: ({ getValue }) => <span>{String(getValue() || "-")}</span>,
+        accessorKey: "type",
+        header: "Proje Tipi",
+        cell: ({ getValue }) => <span>{String(getValue())}</span>,
       },
       {
-        accessorKey: "email",
-        header: "E-Posta",
-        cell: ({ getValue }) => <span>{String(getValue() || "-")}</span>,
+        accessorKey: "fabricationTime",
+        header: "Faturalama Tipi",
+        cell: ({ getValue }) => <span>{String(getValue())}</span>,
       },
       {
-        accessorKey: "address",
-        header: "Adres",
+        accessorKey: "duration",
+        header: "Proje Dönemi",
         cell: ({ getValue }) => (
-          <span className="block max-w-[320px] whitespace-normal break-words line-clamp-3">
-            {String(getValue() || "-")}
+          <span className="block max-w-[150px] whitespace-normal break-words text-sm">
+            {String(getValue())}
           </span>
         ),
       },
       {
         id: "actions",
-        header: () => <span className="sr-only">İşlemler</span>,
+        header: "İşlemler",
         cell: ({ row }) => (
           <div className="flex items-center gap-2 justify-end">
             <Button 
               variant="outline" 
               size="icon" 
               aria-label="Görüntüle"
-              onClick={() => router.push(`/management/customers/${row.original.id}`)}
+              onClick={() => router.push(`/management/projects/${row.original.id}`)}
               className="hover:bg-gray-100"
             >
               <Eye className="size-4" />
@@ -207,7 +151,6 @@ export default function ManagementCustomersPage() {
               size="icon" 
               aria-label="Düzenle"
               className="hover:bg-gray-100"
-              onClick={() => handleEditCustomer(row.original)}
             >
               <Pencil className="size-4" />
             </Button>
@@ -223,8 +166,20 @@ export default function ManagementCustomersPage() {
     [router]
   );
 
+  const filteredData = useMemo(() => {
+    let filtered = projects;
+    
+    if (customerFilter && customerFilter !== "all") {
+      filtered = filtered.filter(project => 
+        project.customer.includes(customerFilter)
+      );
+    }
+    
+    return filtered;
+  }, [projects, customerFilter]);
+
   const table = useReactTable({
-    data: customers,
+    data: filteredData,
     columns,
     state: { globalFilter },
     onGlobalFilterChange: setGlobalFilter,
@@ -249,86 +204,60 @@ export default function ManagementCustomersPage() {
   };
 
   const handleClearFilters = () => {
-    setDateFrom("");
-    setDateTo("");
+    setCustomerFilter("all");
     setGlobalFilter("");
     table.setPageIndex(0);
   };
 
-  const handleAddCustomer = (newCustomer: Omit<Customer, "id">) => {
-    const maxId = Math.max(...customers.map(c => c.id));
-    const customerWithId = {
-      ...newCustomer,
-      id: maxId + 1,
-    };
-    setCustomers([...customers, customerWithId]);
-  };
-
-  const handleEditCustomer = (customer: Customer) => {
-    setEditingCustomer(customer);
-    setIsEditMode(true);
-    setIsDialogOpen(true);
-  };
-
-  const handleUpdateCustomer = (updatedCustomer: Customer) => {
-    setCustomers(customers.map(c => 
-      c.id === updatedCustomer.id ? updatedCustomer : c
-    ));
-    setEditingCustomer(undefined);
-    setIsEditMode(false);
-  };
-
-  const handleNewCustomer = () => {
-    setEditingCustomer(undefined);
-    setIsEditMode(false);
-    setIsDialogOpen(true);
-  };
-
-  const breadcrumbItems = [{ label: "Anasayfa", href: "/management/dashboard" }, { label: "Müşteri Listesi" }]
+  const breadcrumbItems = [
+    { label: "Anasayfa", href: "/management/dashboard" }, 
+    { label: "Proje Listesi" }
+  ];
 
   return (
     <ManagementMainLayout>
       <Breadcrumb items={breadcrumbItems} />
 
-      <PageHeader title="Müşteri Listesi" subtitle="Müşterileri görüntüleyin ve yönetin" />
+      <PageHeader title="Proje Listesi" subtitle="Projeleri görüntüleyin ve yönetin" />
 
       <Card className="bg-white/90 backdrop-blur border-gray-100">
         <CardHeader className="border-b">
           <CardTitle className="text-base font-semibold">
-            Filtreler
+            Filtrelenebilir Panel
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Accordion type="single" collapsible defaultValue="filters">
             <AccordionItem value="filters">
               <AccordionTrigger className="px-0">
-                Sözleşme Bitiş. Tarih Aralığı
+                Müşteri Bilgisi
               </AccordionTrigger>
               <AccordionContent>
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-3">
-                      <div
-                        className="flex items-center gap-2 rounded-md border border-input px-3 py-1.5 bg-transparent"
-                        aria-label="Tarih aralığı"
+                      <Select 
+                        value={customerFilter} 
+                        onValueChange={setCustomerFilter}
                       >
-                        <CalendarRange className="size-4 text-muted-foreground" />
-                        <Input
-                          aria-label="Başlangıç tarihi"
-                          type="date"
-                          value={dateFrom}
-                          onChange={(e) => setDateFrom(e.target.value)}
-                          className="h-9 w-40 border-0 px-0"
-                        />
-                        <span className="text-muted-foreground">-</span>
-                        <Input
-                          aria-label="Bitiş tarihi"
-                          type="date"
-                          value={dateTo}
-                          onChange={(e) => setDateTo(e.target.value)}
-                          className="h-9 w-40 border-0 px-0"
-                        />
-                      </div>
+                        <SelectTrigger className="w-[400px]">
+                          <SelectValue placeholder="-- Seçiniz --" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white max-h-60">
+                          <SelectItem value="all" className="hover:bg-gray-100">
+                            Tümü
+                          </SelectItem>
+                          {uniqueCustomers.map((customer) => (
+                            <SelectItem 
+                              key={customer} 
+                              value={customer}
+                              className="hover:bg-gray-100"
+                            >
+                              {customer}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
@@ -340,7 +269,11 @@ export default function ManagementCustomersPage() {
                     >
                       Temizle
                     </Button>
-                    <Button onClick={handleFilter} aria-label="Filtreleme yap">
+                    <Button 
+                      onClick={handleFilter} 
+                      aria-label="Filtreleme yap"
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                    >
                       Filtreleme Yap
                     </Button>
                   </div>
@@ -357,7 +290,7 @@ export default function ManagementCustomersPage() {
         <CardHeader className="border-b">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <CardTitle className="text-base font-semibold">
-              Müşteri Listesi
+              Proje Listesi
             </CardTitle>
           </div>
         </CardHeader>
@@ -369,7 +302,7 @@ export default function ManagementCustomersPage() {
                   value={String(table.getState().pagination.pageSize)}
                   onValueChange={handleChangePageSize}
                 >
-                  <SelectTrigger aria-label="Sayfa boyutu seç">
+                  <SelectTrigger aria-label="Sayfa boyutu seç" className="w-16">
                     <SelectValue placeholder="10" />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
@@ -434,7 +367,6 @@ export default function ManagementCustomersPage() {
                   </Button>
                 </div>
                 <Button
-                  onClick={handleNewCustomer}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
                   aria-label="Yeni kayıt oluştur"
                 >
@@ -453,7 +385,9 @@ export default function ManagementCustomersPage() {
                         key={header.id}
                         className={
                           header.column.id === "name"
-                            ? "whitespace-normal max-w-[260px]"
+                            ? "whitespace-normal max-w-[200px]"
+                            : header.column.id === "customer"
+                            ? "whitespace-normal max-w-[250px]"
                             : header.column.id === "actions"
                             ? "text-right"
                             : ""
@@ -471,36 +405,44 @@ export default function ManagementCustomersPage() {
                 ))}
               </TableHeader>
               <TableBody>
-                {table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className={
-                          cell.column.id === "name"
-                            ? "font-medium whitespace-normal break-words max-w-[260px]"
-                            : cell.column.id === "address"
-                            ? "max-w-[320px] whitespace-normal break-words"
-                            : cell.column.id === "actions"
-                            ? "text-right"
-                            : ""
-                        }
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
+                {table.getRowModel().rows.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow key={row.id}>
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell
+                          key={cell.id}
+                          className={
+                            cell.column.id === "name"
+                              ? "font-medium whitespace-normal break-words max-w-[200px]"
+                              : cell.column.id === "customer"
+                              ? "max-w-[250px] whitespace-normal break-words"
+                              : cell.column.id === "actions"
+                              ? "text-right"
+                              : ""
+                          }
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                      Bu parametrelerde filvreleme yapabilirsiniz.
+                    </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
 
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <p className="text-sm text-muted-foreground">
                 {table.getFilteredRowModel().rows.length === 0
-                  ? "0 kayıttan 0 - 0 arası"
+                  ? "10 kayıttan 1 - 10 arasındaki kayıtlar"
                   : `${table.getFilteredRowModel().rows.length} kayıttan ${
                       table.getState().pagination.pageIndex *
                         table.getState().pagination.pageSize +
@@ -509,7 +451,7 @@ export default function ManagementCustomersPage() {
                       table.getFilteredRowModel().rows.length,
                       (table.getState().pagination.pageIndex + 1) *
                         table.getState().pagination.pageSize
-                    )} arası`}
+                    )} arasındaki kayıtlar`}
               </p>
 
               <div className="flex items-center gap-2">
@@ -521,19 +463,34 @@ export default function ManagementCustomersPage() {
                 >
                   Önceki
                 </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-current="page"
-                  aria-label={`Sayfa ${
-                    table.getState().pagination.pageIndex + 1
-                  }`}
-                  disabled
-                >
-                  <span className="text-sm">
-                    {table.getState().pagination.pageIndex + 1}
-                  </span>
-                </Button>
+                
+                <div className="flex items-center gap-1">
+                  {table.getCanPreviousPage() && (
+                    <Button variant="outline" size="icon" onClick={() => table.setPageIndex(0)}>
+                      <span className="text-sm">1</span>
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-current="page"
+                    aria-label={`Sayfa ${
+                      table.getState().pagination.pageIndex + 1
+                    }`}
+                    disabled
+                    className="bg-gray-100"
+                  >
+                    <span className="text-sm font-medium">
+                      {table.getState().pagination.pageIndex + 1}
+                    </span>
+                  </Button>
+                  {table.getCanNextPage() && (
+                    <Button variant="outline" size="icon">
+                      <span className="text-sm">Sonraki</span>
+                    </Button>
+                  )}
+                </div>
+
                 <Button
                   variant="outline"
                   onClick={() => table.nextPage()}
@@ -547,16 +504,6 @@ export default function ManagementCustomersPage() {
           </div>
         </CardContent>
       </Card>
-
-      <CustomerFormDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        existingCustomers={customers}
-        onSubmit={handleAddCustomer}
-        isEdit={isEditMode}
-        editingCustomer={editingCustomer}
-        onUpdate={handleUpdateCustomer}
-      />
     </ManagementMainLayout>
   );
 }

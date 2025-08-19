@@ -5,13 +5,14 @@ import { useRouter, useParams } from "next/navigation"
 import { MainLayout } from "@/components/layout/main-layout"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { PageHeader } from "@/components/ui/page-header"
-import { ProjectDetailsCard } from "@/components/time-tracking/project-details-card"
-import { FileUploadCard } from "@/components/time-tracking/file-upload-card"
-import { TimeEntryForm } from "@/components/time-tracking/time-entry-form"
-import { TimeRecordsTable } from "@/components/time-tracking/time-records-table"
+import { ProjectDetailsCard } from "@/app/activity/tasks/[id]/project-details-card"
+import { FileUploadCard } from "@/components/ui/file-upload-card"
+import { TimeEntryForm } from "@/app/activity/tasks/[id]/time-entry-form"
+import { TimeRecordsTable } from "@/app/activity/tasks/[id]/time-records-table"
 import type { Project, TimeRecord } from "@/types/project"
 import { mockTasks, timeRecordsByTaskId } from "@/lib/mock-data"
 import { ArrowLeft } from "lucide-react"
+
 
 // Görev verileri paylaşılan mock kaynaktan
 

@@ -26,7 +26,18 @@ export interface TimeRecord {
   date: string;
   startTime: string;
   endTime: string;
+  duration: number;
   description: string;
+  billable: boolean;
+}
+
+export interface Agreement {
+  id: number;
+  customerInfo: string;
+  agreementNumber: string;
+  startDate: string; // DD.MM.YYYY formatında
+  endDate: string; // DD.MM.YYYY formatında
+  status: "active" | "expired" | "draft";
 }
 
 export const mockCustomers: Customer[] = [
@@ -258,15 +269,15 @@ export const mockTasks: Task[] = [
 // Time Records Mock Data
 export const timeRecordsByTaskId: Record<number, TimeRecord[]> = {
   1: [
-    { id: 1, date: "01.12.2024", startTime: "09:00", endTime: "17:00", description: "Ana sayfa wireframe çalışması" },
-    { id: 2, date: "02.12.2024", startTime: "09:30", endTime: "16:30", description: "Tasarım mockup hazırlama" }
+    { id: 1, date: "01.12.2024", startTime: "09:00", endTime: "17:00", duration: 8, description: "Ana sayfa wireframe çalışması", billable: true },
+    { id: 2, date: "02.12.2024", startTime: "09:30", endTime: "16:30", duration: 7, description: "Tasarım mockup hazırlama", billable: true }
   ],
   2: [
-    { id: 3, date: "05.12.2024", startTime: "10:00", endTime: "18:00", description: "API endpoint planlaması" },
-    { id: 4, date: "06.12.2024", startTime: "09:00", endTime: "17:30", description: "Veritabanı şema tasarımı" }
+    { id: 3, date: "05.12.2024", startTime: "10:00", endTime: "18:00", duration: 8, description: "API endpoint planlaması", billable: true },
+    { id: 4, date: "06.12.2024", startTime: "09:00", endTime: "17:30", duration: 8.5, description: "Veritabanı şema tasarımı", billable: true }
   ],
   3: [
-    { id: 5, date: "10.12.2024", startTime: "09:15", endTime: "17:15", description: "Ürün listeleme component" }
+    { id: 5, date: "10.12.2024", startTime: "09:15", endTime: "17:15", duration: 8, description: "Ürün listeleme component", billable: true }
   ]
 };
 
@@ -288,3 +299,170 @@ export function computeTaskCompletionPercentage(taskId: number, estimateHours: n
   const percentage = Math.round((totalWorkedHours / estimateHours) * 100);
   return Math.min(percentage, 100); // Max %100
 }
+
+export const mockAgreements: Agreement[] = [
+  {
+    id: 1,
+    customerInfo: "A",
+    agreementNumber: "2025-6",
+    startDate: "01.08.2025",
+    endDate: "31.08.2025",
+    status: "active",
+  },
+  {
+    id: 2,
+    customerInfo: "ConcentIT Ltd. Şti.",
+    agreementNumber: "2025-Test",
+    startDate: "01.07.2025",
+    endDate: "31.07.2025",
+    status: "expired",
+  },
+  {
+    id: 3,
+    customerInfo: "EBTR",
+    agreementNumber: "73249243",
+    startDate: "01.07.2025",
+    endDate: "31.12.2027",
+    status: "active",
+  },
+  {
+    id: 4,
+    customerInfo: "Erhan Danışmanlık LTD.ŞTİ.",
+    agreementNumber: "999999999999",
+    startDate: "01.01.2025",
+    endDate: "31.12.2028",
+    status: "active",
+  },
+  {
+    id: 5,
+    customerInfo: "NTT DATA Türkiye",
+    agreementNumber: "20240301",
+    startDate: "01.03.2024",
+    endDate: "31.12.2025",
+    status: "active",
+  },
+  {
+    id: 6,
+    customerInfo: "Test",
+    agreementNumber: "2025/2",
+    startDate: "01.07.2025",
+    endDate: "01.11.2025",
+    status: "active",
+  },
+];
+
+export interface Project {
+  id: string;
+  name: string;
+  projectNumber: string;
+  customer: string;
+  status: "Aktif" | "Tamamlandı" | "Pasif";
+  type: "Yazılım Projesi" | "Proje Başı" | "Fiyat Değişken";
+  fabricationTime: string;
+  duration: string;
+  isImportant?: boolean;
+}
+
+export const mockProjects: Project[] = [
+  {
+    id: "1",
+    name: "Abuduwood Geliştime Projesi",
+    projectNumber: "412512",
+    customer: "Ismail Ali Abudawood Trading Company Limited",
+    status: "Aktif",
+    type: "Yazılım Projesi",
+    fabricationTime: "Task/Milestone Bazlı",
+    duration: "01.08.2026 - 01.08.2026",
+  },
+  {
+    id: "2",
+    name: "Dessek EBTR",
+    projectNumber: "EBTR2425",
+    customer: "EBTR",
+    status: "Aktif",
+    type: "Yazılım Projesi",
+    fabricationTime: "Task/Milestone Bazlı",
+    duration: "Tanımsız",
+  },
+  {
+    id: "3",
+    name: "EBTR DESSEK",
+    projectNumber: "957452534",
+    customer: "EBTR",
+    status: "Aktif",
+    type: "Yazılım Projesi",
+    fabricationTime: "Task/Milestone Bazlı",
+    duration: "02.07.2026",
+  },
+  {
+    id: "4",
+    name: "IATCO DESSEK",
+    projectNumber: "20240523",
+    customer: "Ismail Ali Abudawood Trading Company Limited",
+    status: "Aktif",
+    type: "Yazılım Projesi",
+    fabricationTime: "Task/Milestone Bazlı",
+    duration: "01.01.2024",
+  },
+  {
+    id: "5",
+    name: "İnci Roll-Out",
+    projectNumber: "20240301",
+    customer: "NTT DATA Türkiye",
+    status: "Aktif",
+    type: "Yazılım Projesi",
+    fabricationTime: "Proje Başı",
+    duration: "01.03.2024 - 31.12.2025",
+    isImportant: true,
+  },
+  {
+    id: "6",
+    name: "mega",
+    projectNumber: "123412",
+    customer: "Inervo",
+    status: "Aktif",
+    type: "Yazılım Projesi",
+    fabricationTime: "Proje Başı",
+    duration: "01.01.2025 - 31.12.2025",
+  },
+  {
+    id: "7",
+    name: "Proje-A",
+    projectNumber: "2025-1",
+    customer: "A",
+    status: "Aktif",
+    type: "Yazılım Projesi",
+    fabricationTime: "Task/Milestone Bazlı",
+    duration: "01.08.2025 - 31.08.2025",
+  },
+  {
+    id: "8",
+    name: "Proje Test",
+    projectNumber: "2025/1",
+    customer: "ConcentIT Ltd. Şti.",
+    status: "Aktif",
+    type: "Yazılım Projesi",
+    fabricationTime: "Task/Milestone Bazlı",
+    duration: "01.07.2025 - 31.07.2025",
+  },
+  {
+    id: "9",
+    name: "Proje Test 2",
+    projectNumber: "2025/2",
+    customer: "Test",
+    status: "Aktif",
+    type: "Yazılım Projesi",
+    fabricationTime: "Task/Milestone Bazlı",
+    duration: "01.07.2025 - 01.11.2025",
+  },
+  {
+    id: "10",
+    name: "S4 Geçişi",
+    projectNumber: "9999999999",
+    customer: "Erhan Danışmanlık LTD.ŞTİ.",
+    status: "Aktif",
+    type: "Yazılım Projesi",
+    fabricationTime: "Task/Milestone Bazlı",
+    duration: "01.01.2025 - 31.12.2025",
+  },
+];

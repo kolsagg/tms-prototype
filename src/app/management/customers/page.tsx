@@ -2,6 +2,7 @@
 
 import { ManagementMainLayout } from "@/components/management/management-main-layout";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { CustomerFormDialog } from "@/components/management/customer-form-dialog";
 type Customer = {
   id: number;
   name: string;
@@ -142,9 +144,14 @@ const initialCustomers: Customer[] = [
 ];
 
 export default function ManagementCustomersPage() {
+  const router = useRouter();
   const [globalFilter, setGlobalFilter] = useState("");
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [customers, setCustomers] = useState(initialCustomers);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const columns = useMemo<ColumnDef<Customer>[]>(
     () => [
@@ -176,7 +183,7 @@ export default function ManagementCustomersPage() {
         accessorKey: "address",
         header: "Adres",
         cell: ({ getValue }) => (
-          <span className="block max-w-[520px] whitespace-nowrap overflow-hidden text-ellipsis">
+          <span className="block max-w-[320px] whitespace-normal break-words line-clamp-3">
             {String(getValue() || "-")}
           </span>
         ),
@@ -184,15 +191,27 @@ export default function ManagementCustomersPage() {
       {
         id: "actions",
         header: () => <span className="sr-only">İşlemler</span>,
-        cell: () => (
+        cell: ({ row }) => (
           <div className="flex items-center gap-2 justify-end">
-            <Button variant="outline" size="icon" aria-label="Görüntüle">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              aria-label="Görüntüle"
+              onClick={() => router.push(`/management/customers/${row.original.id}`)}
+              className="hover:bg-gray-100"
+            >
               <Eye className="size-4" />
             </Button>
-            <Button variant="outline" size="icon" aria-label="Düzenle">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              aria-label="Düzenle"
+              className="hover:bg-gray-100"
+              onClick={() => handleEditCustomer(row.original)}
+            >
               <Pencil className="size-4" />
             </Button>
-            <Button variant="outline" size="icon" aria-label="Sil">
+            <Button variant="outline" size="icon" aria-label="Sil" className="hover:bg-gray-100">
               <Trash2 className="size-4" />
             </Button>
           </div>
@@ -201,11 +220,11 @@ export default function ManagementCustomersPage() {
         enableSorting: false,
       },
     ],
-    []
+    [router]
   );
 
   const table = useReactTable({
-    data: initialCustomers,
+    data: customers,
     columns,
     state: { globalFilter },
     onGlobalFilterChange: setGlobalFilter,
@@ -234,6 +253,35 @@ export default function ManagementCustomersPage() {
     setDateTo("");
     setGlobalFilter("");
     table.setPageIndex(0);
+  };
+
+  const handleAddCustomer = (newCustomer: Omit<Customer, "id">) => {
+    const maxId = Math.max(...customers.map(c => c.id));
+    const customerWithId = {
+      ...newCustomer,
+      id: maxId + 1,
+    };
+    setCustomers([...customers, customerWithId]);
+  };
+
+  const handleEditCustomer = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setIsEditMode(true);
+    setIsDialogOpen(true);
+  };
+
+  const handleUpdateCustomer = (updatedCustomer: Customer) => {
+    setCustomers(customers.map(c => 
+      c.id === updatedCustomer.id ? updatedCustomer : c
+    ));
+    setEditingCustomer(undefined);
+    setIsEditMode(false);
+  };
+
+  const handleNewCustomer = () => {
+    setEditingCustomer(undefined);
+    setIsEditMode(false);
+    setIsDialogOpen(true);
   };
 
   const breadcrumbItems = [{ label: "Anasayfa", href: "/management/dashboard" }, { label: "Müşteri Listesi" }]
@@ -386,6 +434,7 @@ export default function ManagementCustomersPage() {
                   </Button>
                 </div>
                 <Button
+                  onClick={handleNewCustomer}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
                   aria-label="Yeni kayıt oluştur"
                 >
@@ -431,7 +480,7 @@ export default function ManagementCustomersPage() {
                           cell.column.id === "name"
                             ? "font-medium whitespace-normal break-words max-w-[260px]"
                             : cell.column.id === "address"
-                            ? "max-w-[520px] whitespace-nowrap overflow-hidden text-ellipsis"
+                            ? "max-w-[320px] whitespace-normal break-words"
                             : cell.column.id === "actions"
                             ? "text-right"
                             : ""
@@ -498,6 +547,16 @@ export default function ManagementCustomersPage() {
           </div>
         </CardContent>
       </Card>
+
+      <CustomerFormDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        existingCustomers={customers}
+        onSubmit={handleAddCustomer}
+        isEdit={isEditMode}
+        editingCustomer={editingCustomer}
+        onUpdate={handleUpdateCustomer}
+      />
     </ManagementMainLayout>
   );
 }

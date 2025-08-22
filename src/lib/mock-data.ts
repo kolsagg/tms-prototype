@@ -351,6 +351,39 @@ export const mockAgreements: Agreement[] = [
   },
 ];
 
+// Project Members Interface
+export interface ProjectMember {
+  id: number;
+  name: string;
+  role: string;
+  phone: string;
+  email: string;
+}
+
+// Project Milestone Interface
+export interface ProjectMilestone {
+  id: number;
+  title: string;
+  completionDate: string;
+  stageType: string;
+  billingType: string;
+  amount: number;
+  kdvRate: number;
+  creationDate: string;
+}
+
+// Project Task Interface
+export interface ProjectTask {
+  id: number;
+  title: string;
+  developer: string;
+  status: string;
+  priority: string;
+  startDate: string;
+  duration: number;
+  creationDate: string;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -465,4 +498,86 @@ export const mockProjects: Project[] = [
     fabricationTime: "Task/Milestone Bazlı",
     duration: "01.01.2025 - 31.12.2025",
   },
+];
+
+// Mock project members data
+export const mockProjectMembers: Record<string, ProjectMember[]> = {
+  "1": [
+    { id: 1, name: "Adem Göğebakan", role: "test", phone: "0 505 618 8221", email: "aaa@gmail.com" },
+    { id: 2, name: "Adem Göğebakan-B", role: "test", phone: "0 505 618 8221", email: "abc@gmail.com" }
+  ],
+  "2": [
+    { id: 3, name: "Mehmet Yılmaz", role: "Developer", phone: "0 532 123 4567", email: "mehmet@example.com" },
+    { id: 4, name: "Ayşe Demir", role: "Designer", phone: "0 543 987 6543", email: "ayse@example.com" }
+  ]
+};
+
+// Mock project milestones data
+export const mockProjectMilestones: Record<string, ProjectMilestone[]> = {
+  "1": [
+    {
+      id: 1,
+      title: "geliştirmeler",
+      completionDate: "30.08.2025",
+      stageType: "Aşama / Milestone",
+      billingType: "Adam/Gün",
+      amount: 100,
+      kdvRate: 20,
+      creationDate: "02.08.2025"
+    }
+  ]
+};
+
+// Mock project tasks data  
+export const mockProjectTasks: Record<string, ProjectTask[]> = {
+  "1": [
+    {
+      id: 1,
+      title: "x programı",
+      developer: "Fatih Yasak",
+      status: "geliştirilmeler",
+      priority: "Normal",
+      startDate: "Tamamlandı",
+      duration: 24,
+      creationDate: "02.08.2025 10:54"
+    }
+  ]
+};
+
+// İş Türleri
+export interface JobType {
+  id: string;
+  name: string;
+}
+
+export const mockJobTypes: JobType[] = [
+  { id: "development", name: "Geliştirme" },
+  { id: "design", name: "Tasarım" },
+  { id: "testing", name: "Test" },
+  { id: "documentation", name: "Dokümantasyon" },
+  { id: "meeting", name: "Toplantı" },
+  { id: "research", name: "Araştırma" },
+  { id: "maintenance", name: "Bakım" },
+  { id: "support", name: "Destek" },
+  { id: "analysis", name: "Analiz" },
+  { id: "planning", name: "Planlama" }
+];
+
+// Kullanıcılar (Atanan Kişiler)
+export interface User {
+  id: string;
+  name: string;
+  email?: string;
+  role?: string;
+}
+
+export const mockUsers: User[] = [
+  { id: "1", name: "Ahmet Yılmaz", email: "ahmet@company.com", role: "Developer" },
+  { id: "2", name: "Ayşe Demir", email: "ayse@company.com", role: "Designer" },
+  { id: "3", name: "Mehmet Kaya", email: "mehmet@company.com", role: "Tester" },
+  { id: "4", name: "Fatma Özkan", email: "fatma@company.com", role: "Project Manager" },
+  { id: "5", name: "Ali Çelik", email: "ali@company.com", role: "Developer" },
+  { id: "6", name: "Zeynep Arslan", email: "zeynep@company.com", role: "UI/UX Designer" },
+  { id: "7", name: "Can Şahin", email: "can@company.com", role: "DevOps" },
+  { id: "8", name: "Elif Koç", email: "elif@company.com", role: "Business Analyst" }
 ];

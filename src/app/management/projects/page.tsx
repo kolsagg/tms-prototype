@@ -37,7 +37,6 @@ import {
   Printer,
   RefreshCcw,
   Search,
-  Star,
   Trash2,
 } from "lucide-react";
 import {
@@ -68,11 +67,8 @@ export default function ManagementProjectsPage() {
       {
         accessorKey: "name",
         header: "Proje Adı",
-        cell: ({ getValue, row }) => (
+        cell: ({ getValue }) => (
           <div className="flex items-center gap-2 max-w-[200px]">
-            {row.original.isImportant && (
-              <Star className="size-4 text-yellow-500 fill-yellow-500" />
-            )}
             <span className="font-medium whitespace-normal break-words">
               {String(getValue())}
             </span>
@@ -215,7 +211,7 @@ export default function ManagementProjectsPage() {
   ];
 
   return (
-    <ManagementMainLayout>
+    <ManagementMainLayout contentClassName="max-w-none">
       <Breadcrumb items={breadcrumbItems} />
 
       <PageHeader title="Proje Listesi" subtitle="Projeleri görüntüleyin ve yönetin" />
@@ -272,7 +268,7 @@ export default function ManagementProjectsPage() {
                     <Button 
                       onClick={handleFilter} 
                       aria-label="Filtreleme yap"
-                      className="bg-emerald-600 hover:bg-emerald-700"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
                     >
                       Filtreleme Yap
                     </Button>

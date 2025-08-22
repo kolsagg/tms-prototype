@@ -62,6 +62,11 @@ export const ManagementSidebar = ({
     { name: "Raporlar", href: "/activity/reports" },
   ];
 
+  const tasksSubNav = [
+    { name: "Gelen Talepler", href: "#" },
+    { name: "Talep Listesi", href: "/management/tasks/list" },
+  ];
+
   return (
     <>
       <aside
@@ -126,6 +131,8 @@ export const ManagementSidebar = ({
               );
               const isActivity = item.name === "Aktivite";
               const isActivitySectionActive = pathname.startsWith("/activity");
+              const isTasks = item.name === "Görevler";
+              const isTasksSectionActive = pathname.startsWith("/management/tasks");
 
               if (isProjects) {
                 // Special rendering for "Projeler": accordion in expanded, popover in collapsed
@@ -215,6 +222,96 @@ export const ManagementSidebar = ({
                               <span className="text-sm">Proje Yönetimi</span>
                             </Button>
                           </Link>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                );
+              }
+
+              if (isTasks) {
+                // Special rendering for "Görevler": accordion in expanded, popover in collapsed
+                if (isCollapsed) {
+                  return (
+                    <Popover key={item.href}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          aria-label={item.name}
+                          className={cn(
+                            "w-full transition-all rounded-lg relative",
+                            "h-10 px-0 justify-center",
+                            isTasksSectionActive
+                              ? "text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md"
+                              : "text-gray-700 hover:text-gray-900 hover:bg-gray-100/80"
+                          )}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        side="right"
+                        align="start"
+                        sideOffset={12}
+                        className="w-60 p-2 bg-white text-gray-900 border border-gray-200 shadow-xl"
+                      >
+                        <div className="flex flex-col">
+                          {tasksSubNav.map((sub) => (
+                            <Link key={sub.href} href={sub.href} aria-label={sub.name} onClick={onClose}>
+                              <Button
+                                variant="ghost"
+                                className={cn(
+                                  "w-full justify-start gap-3 h-9 px-3 rounded-md",
+                                  pathname === sub.href
+                                    ? "text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md"
+                                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-100/80"
+                                )}
+                              >
+                                <span className="text-sm">{sub.name}</span>
+                              </Button>
+                            </Link>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  );
+                }
+
+                return (
+                  <Accordion type="single" collapsible key={item.href}>
+                    <AccordionItem value="tasks" className="border-0">
+                      <AccordionTrigger
+                        className={cn(
+                          "w-full transition-all rounded-lg px-3 h-10 items-center hover:no-underline py-0",
+                          isTasksSectionActive
+                            ? "text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md"
+                            : "text-gray-700 hover:text-gray-900 hover:bg-gray-100/80"
+                        )}
+                        aria-label={item.name}
+                      >
+                        <span className="flex items-center gap-3">
+                          <Icon className="h-4 w-4" />
+                          <span className="font-medium text-sm truncate">{item.name}</span>
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent className="pt-2 pb-1">
+                        <div className="pl-9 pr-2 space-y-1">
+                          {tasksSubNav.map((sub) => (
+                            <Link key={sub.href} href={sub.href} aria-label={sub.name}>
+                              <Button
+                                variant="ghost"
+                                className={cn(
+                                  "w-full justify-start gap-3 h-9 px-3 rounded-md",
+                                  pathname === sub.href
+                                    ? "text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md"
+                                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-100/80"
+                                )}
+                                onClick={onClose}
+                              >
+                                <span className="text-sm">{sub.name}</span>
+                              </Button>
+                            </Link>
+                          ))}
                         </div>
                       </AccordionContent>
                     </AccordionItem>

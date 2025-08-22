@@ -11,6 +11,13 @@ Code Style and Structure
 -   Prefer iteration and modularization over code duplication.
 -   Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
 -   Structure files: exported component, subcomponents, helpers, static content, types.
+-   When creating a page, create the things you will do inside it as separate components in that folder and call them in "page.tsx".
+-   Keep related components close to each other.
+-   Use dummy data for initial development and testing.
+-   Remove unused code and dependencies.
+-   Keep the codebase clean and organized.
+-   Document components and their usage.
+-   Do not hardcode values; use constants or configuration files instead.
 
 Naming Conventions
 
@@ -33,6 +40,9 @@ UI and Styling
 
 -   Use Shadcn UI, Radix, and Tailwind for components and styling.
 -   Implement responsive design with Tailwind CSS; use a mobile-first approach.
+-   Always use same UI Design and Components for whole project.
+-   You can add component from "Shadcn UI" with 'npx' if it's necessary.
+-   You can add instructions if it is effect whole projects.
 
 Performance Optimization
 

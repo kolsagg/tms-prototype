@@ -1,275 +1,515 @@
-"use client"
+"use client";
 
-import { ManagementMainLayout } from "@/components/management/management-main-layout"
-import { Breadcrumb } from "@/components/ui/breadcrumb"
-import { PageHeader } from "@/components/ui/page-header"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Filter, Eye, ChevronLeft, ChevronRight, RotateCcw, ChevronUp, ChevronDown, FileDown, FileSpreadsheet, Printer, Pencil, Trash2, Plus } from "lucide-react"
-import { useMemo, useState, useCallback } from "react"
-import { useRouter } from "next/navigation"
-import { mockAgreements, type Agreement } from "@/lib/mock-data"
-import { AgreementFormDialog } from "./agreement-form-dialog"
+import { ManagementMainLayout } from "@/components/management/management-main-layout";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableCell,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Separator } from "@/components/ui/separator";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import {
+  CalendarRange,
+  Eye,
+  FileDown,
+  Pencil,
+  Plus,
+  Printer,
+  RefreshCcw,
+  Search,
+  Trash2,
+} from "lucide-react";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { mockAgreements, type Agreement } from "@/lib/mock-data";
+import { AgreementFormDialog } from "./agreement-form-dialog";
 
 export default function AgreementsPage() {
-  const router = useRouter()
-  const [filterOpen, setFilterOpen] = useState(true)
-  // Draft (UI) filter values
-  const [draftCustomer, setDraftCustomer] = useState("all")
-  const [draftFrom, setDraftFrom] = useState("") // YYYY-MM-DD
-  const [draftTo, setDraftTo] = useState("") // YYYY-MM-DD
-  // Applied filter values (used to filter the table)
-  const [appliedCustomer, setAppliedCustomer] = useState("")
-  const [appliedFrom, setAppliedFrom] = useState("")
-  const [appliedTo, setAppliedTo] = useState("")
-  
-  // Dialog states
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingAgreement, setEditingAgreement] = useState<Agreement | undefined>()
-  const [isEditMode, setIsEditMode] = useState(false)
-
-  const filteredAgreements = useMemo(() => {
-    const query = appliedCustomer.trim().toLowerCase()
-    const parseDDMMYYYY = (s: string) => {
-      const [d, m, y] = s.split(".")
-      return new Date(Number(y), Number(m) - 1, Number(d))
-    }
-    const parseYYYYMMDD = (s: string) => {
-      const [y, m, d] = s.split("-")
-      return new Date(Number(y), Number(m) - 1, Number(d))
-    }
-    const from = appliedFrom ? parseYYYYMMDD(appliedFrom) : undefined
-    const to = appliedTo ? parseYYYYMMDD(appliedTo) : undefined
-    return mockAgreements.filter((a) => {
-      const matchesQuery = query.length === 0 || a.customerInfo.toLowerCase().includes(query)
-      const agreementEnd = parseDDMMYYYY(a.endDate)
-      const matchesFrom = !from || agreementEnd >= from
-      const matchesTo = !to || agreementEnd <= to
-      return matchesQuery && matchesFrom && matchesTo
-    })
-  }, [appliedCustomer, appliedFrom, appliedTo])
-
-  const applyFilters = () => {
-    setAppliedCustomer(draftCustomer === "all" ? "" : draftCustomer)
-    setAppliedFrom(draftFrom)
-    setAppliedTo(draftTo)
-  }
-
-  const resetFilters = () => {
-    setDraftCustomer("all")
-    setDraftFrom("")
-    setDraftTo("")
-    setAppliedCustomer("")
-    setAppliedFrom("")
-    setAppliedTo("")
-  }
-
-  const uniqueCustomers = useMemo(() => {
-    const unique = Array.from(new Set(mockAgreements.map((a) => a.customerInfo)))
-    return unique
-  }, [])
-
-  const handleNewAgreement = useCallback(() => {
-    setEditingAgreement(undefined)
-    setIsEditMode(false)
-    setIsDialogOpen(true)
-  }, [])
-
-  const handleEditAgreement = useCallback((agreement: Agreement) => {
-    setEditingAgreement(agreement)
-    setIsEditMode(true)
-    setIsDialogOpen(true)
-  }, [])
+  const router = useRouter();
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [dateRange, setDateRange] = useState<{from?: string; to?: string}>({});
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [agreements, setAgreements] = useState(mockAgreements);
+  const [editingAgreement, setEditingAgreement] = useState<Agreement | undefined>(undefined);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [accordionValue, setAccordionValue] = useState<string | undefined>("filters");
 
   const getStatusBadgeClass = (status: Agreement["status"]) => {
-    if (status === "active") return "bg-gradient-to-r from-green-100 to-emerald-100 text-green-700"
-    if (status === "expired") return "bg-gradient-to-r from-orange-100 to-red-100 text-orange-700"
-    return "bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700"
-  }
+    if (status === "active") return "bg-green-100 text-green-700";
+    if (status === "expired") return "bg-red-100 text-red-700";
+    return "bg-yellow-100 text-yellow-700";
+  };
 
   const getStatusText = (status: Agreement["status"]) => {
-    if (status === "active") return "Devam Ediyor"
-    if (status === "expired") return "Süresi Doldu"
-    return "Taslak"
-  }
+    if (status === "active") return "Devam Ediyor";
+    if (status === "expired") return "Süresi Doldu";
+    return "Taslak";
+  };
+
+  const columns = useMemo<ColumnDef<Agreement>[]>(
+    () => [
+      {
+        accessorKey: "customerInfo",
+        header: "Müşteri Bilgisi",
+        cell: ({ getValue }) => (
+          <span className="font-medium whitespace-normal break-words block max-w-[200px]">
+            {String(getValue())}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "agreementNumber",
+        header: "Sözleşme Numarası",
+        cell: ({ getValue }) => (
+          <span className="font-mono font-medium text-gray-600">
+            {String(getValue())}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "startDate",
+        header: "Başlangıç Tarihi",
+        cell: ({ getValue }) => (
+          <span className="text-gray-600 font-medium">
+            {String(getValue())}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "endDate",
+        header: "Bitiş Tarihi",
+        cell: ({ getValue }) => (
+          <span className="text-gray-600 font-medium">
+            {String(getValue())}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: "Sözleşme Durumu",
+        cell: ({ getValue }) => {
+          const status = getValue() as Agreement["status"];
+          return (
+            <Badge className={`border-0 px-3 py-1 ${getStatusBadgeClass(status)}`}>
+              {getStatusText(status)}
+            </Badge>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: () => <span className="sr-only">İşlemler</span>,
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2 justify-end">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              aria-label="Görüntüle"
+              onClick={() => router.push(`/management/agreements/${row.original.id}`)}
+              className="hover:bg-gray-100"
+            >
+              <Eye className="size-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              aria-label="Düzenle"
+              className="hover:bg-gray-100"
+              onClick={() => handleEditAgreement(row.original)}
+            >
+              <Pencil className="size-4" />
+            </Button>
+            <Button variant="outline" size="icon" aria-label="Sil" className="hover:bg-gray-100">
+              <Trash2 className="size-4" />
+            </Button>
+          </div>
+        ),
+        enableHiding: false,
+        enableSorting: false,
+      },
+    ],
+    [router]
+  );
+
+  const table = useReactTable({
+    data: agreements,
+    columns,
+    state: { globalFilter },
+    onGlobalFilterChange: setGlobalFilter,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+  });
+
+  const handleChangePageSize = (value: string) => {
+    const nextSize = Number(value);
+    if (!nextSize) return;
+    table.setPageSize(nextSize);
+  };
+
+  const handleSearch = (value: string) => {
+    setGlobalFilter(value);
+    table.setPageIndex(0);
+  };
+
+  const handleFilter = () => {
+    table.setPageIndex(0);
+  };
+
+  const handleClearFilters = () => {
+    setDateRange({});
+    setGlobalFilter("");
+    table.setPageIndex(0);
+  };
+
+  const handleEditAgreement = (agreement: Agreement) => {
+    setEditingAgreement(agreement);
+    setIsEditMode(true);
+    setIsDialogOpen(true);
+  };
+
+  const handleNewAgreement = () => {
+    setEditingAgreement(undefined);
+    setIsEditMode(false);
+    setIsDialogOpen(true);
+  };
 
   const breadcrumbItems = [
-    { label: "Anasayfa", href: "/" },
+    { label: "Anasayfa", href: "/management/dashboard" },
     { label: "Sözleşme Listesi" },
-  ]
+  ];
 
   return (
     <ManagementMainLayout contentClassName="max-w-none">
       <Breadcrumb items={breadcrumbItems} />
-      <PageHeader title="Sözleşme Listesi"
-       subtitle="Sözleşmelerinizi filtreleyin, arayın ve yönetin"
-      />
 
-      {/* Filtrelenebilir Panel */}
-      <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-md overflow-hidden mb-8">
-        <CardHeader className="bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-100/50 pb-6">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-bold text-gray-900">Filtrelenebilir Panel</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => setFilterOpen((v) => !v)} className="gap-2">
-              {filterOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              {filterOpen ? "Gizle" : "Göster"}
-            </Button>
-          </div>
-        </CardHeader>
-        {filterOpen && (
-          <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
-              <div className="flex items-center gap-3">
-                <Select value={draftCustomer} onValueChange={(v) => setDraftCustomer(v)}>
-                  <SelectTrigger className="w-80 border-gray-200 bg-white">
-                    <SelectValue placeholder="Müşteri seçin" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl">
-                    <SelectItem value="all">Tüm Müşteriler</SelectItem>
-                    {uniqueCustomers.map((customer) => (
-                      <SelectItem key={customer} value={customer}>{customer}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl p-2 border border-gray-200">
-                  <span className="text-sm text-gray-600">Bitiş Başlangıç</span>
-                  <Input type="date" className="h-9 w-40" value={draftFrom} onChange={(e) => setDraftFrom(e.target.value)} />
+      <PageHeader title="Sözleşme Listesi" subtitle="Sözleşmeleri görüntüleyin ve yönetin" />
+
+      <Card className="bg-white/90 backdrop-blur border-gray-100">
+        <CardContent className="p-0">
+          <Accordion type="single" collapsible value={accordionValue} onValueChange={setAccordionValue}>
+            <AccordionItem value="filters" className="border-0">
+              <AccordionTrigger className="px-6 py-4 hover:no-underline border-b">
+                <CardTitle className="text-base font-semibold">
+                  Filtreler
+                </CardTitle>
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-6">
+                <div className="space-y-4 pt-4">
+                  <div className="space-y-2 space-x-2">
+                    <label className="text-sm font-medium">
+                      Sözleşme Bitiş Tarih Aralığı:
+                    </label>
+                    <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-[280px] justify-start text-left font-normal"
+                        >
+                          <CalendarRange className="mr-2 h-4 w-4" />
+                          {dateRange.from && dateRange.to ? (
+                            `${new Date(dateRange.from).toLocaleDateString('tr-TR')} - ${new Date(dateRange.to).toLocaleDateString('tr-TR')}`
+                          ) : dateRange.from ? (
+                            `${new Date(dateRange.from).toLocaleDateString('tr-TR')} - Bitiş tarihi seçin`
+                          ) : (
+                            <span className="text-muted-foreground">Tarih aralığı seçin</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-4 bg-white border shadow-lg z-50" align="start">
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Başlangıç</label>
+                              <Input
+                                type="date"
+                                value={dateRange.from || ""}
+                                onChange={(e) => setDateRange({...dateRange, from: e.target.value})}
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Bitiş</label>
+                              <Input
+                                type="date"
+                                value={dateRange.to || ""}
+                                onChange={(e) => setDateRange({...dateRange, to: e.target.value})}
+                                className="w-full"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setDateRange({});
+                                setIsDatePickerOpen(false);
+                              }}
+                            >
+                              Temizle
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => setIsDatePickerOpen(false)}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                            >
+                              Uygula
+                            </Button>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleClearFilters}
+                    >
+                      Temizle
+                    </Button>
+                    <Button onClick={handleFilter}>
+                      Filtreleme Yap
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 bg-gray-50/80 rounded-xl p-2 border border-gray-200">
-                  <span className="text-sm text-gray-600">Bitiş Son</span>
-                  <Input type="date" className="h-9 w-40" value={draftTo} onChange={(e) => setDraftTo(e.target.value)} />
-                </div>
-                <Button variant="outline" className="border-gray-200 bg-white/80 gap-2" onClick={applyFilters}>
-                  <Filter className="h-4 w-4" />
-                  Uygula
-                </Button>
-                <Button variant="ghost" className="gap-2" onClick={resetFilters}>
-                  <RotateCcw className="h-4 w-4" />
-                  Temizle
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        )}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </CardContent>
       </Card>
 
-      {/* Sözleşme Listesi */}
-      <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-md overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-100/50 pb-6">
-          <div className="flex items-center justify-between gap-4">
-            <CardTitle className="text-2xl font-bold text-gray-900">Sözleşme Listesi</CardTitle>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="border-gray-200 bg-white/80 gap-2" onClick={() => console.log("export-pdf") }>
-                <FileDown className="h-4 w-4" />
-                PDF
-              </Button>
-              <Button variant="outline" size="sm" className="border-gray-200 bg-white/80 gap-2" onClick={() => console.log("export-excel") }>
-                <FileSpreadsheet className="h-4 w-4" />
-                Excel
-              </Button>
-              <Button variant="outline" size="sm" className="border-gray-200 bg-white/80 gap-2" onClick={() => window.print()}>
-                <Printer className="h-4 w-4" />
-                Yazdır
-              </Button>
-              <Button 
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg gap-2" 
-                onClick={handleNewAgreement}
-              >
-                <Plus className="h-4 w-4" />
-                Yeni Kayıt
-              </Button>
-            </div>
+      <div className="h-6" />
+
+      <Card className="bg-white/90 backdrop-blur border-gray-100">
+        <CardHeader className="border-b">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <CardTitle className="text-base font-semibold">
+              Sözleşme Listesi
+            </CardTitle>
           </div>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
+        <CardContent className="pt-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Select
+                  value={String(table.getState().pagination.pageSize)}
+                  onValueChange={handleChangePageSize}
+                >
+                  <SelectTrigger aria-label="Sayfa boyutu seç">
+                    <SelectValue placeholder="10" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="10" className="hover:bg-gray-100">
+                      10
+                    </SelectItem>
+                    <SelectItem value="25" className="hover:bg-gray-100">
+                      25
+                    </SelectItem>
+                    <SelectItem value="50" className="hover:bg-gray-100">
+                      50
+                    </SelectItem>
+                    <SelectItem value="100" className="hover:bg-gray-100">
+                      100
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <span className="text-sm text-muted-foreground">
+                  kaydı göster
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Ara:</span>
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                    <Input
+                      aria-label="Ara"
+                      placeholder="Ara"
+                      value={globalFilter}
+                      onChange={(e) => handleSearch(e.target.value)}
+                      className="pl-8 w-56"
+                    />
+                  </div>
+                </div>
+                <Separator orientation="vertical" className="h-6" />
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Dışa aktar"
+                    className="hover:bg-gray-100"
+                  >
+                    <FileDown className="size-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Yazdır"
+                    className="hover:bg-gray-100"
+                  >
+                    <Printer className="size-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Yenile"
+                    className="hover:bg-gray-100"
+                  >
+                    <RefreshCcw className="size-4" />
+                  </Button>
+                </div>
+                <Button
+                  onClick={handleNewAgreement}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  aria-label="Yeni kayıt oluştur"
+                >
+                  <Plus className="size-4" />
+                  Yeni Kayıt
+                </Button>
+              </div>
+            </div>
+
             <Table>
               <TableHeader>
-                <TableRow className="border-gray-100 bg-gradient-to-r from-gray-50/50 to-slate-50/50">
-                  <TableHead className="font-bold text-gray-700 h-14">Müşteri Bilgisi</TableHead>
-                  <TableHead className="font-bold text-gray-700">Sözleşme Numarası</TableHead>
-                  <TableHead className="font-bold text-gray-700">Başlangıç Tarihi</TableHead>
-                  <TableHead className="font-bold text-gray-700">Bitiş Tarihi</TableHead>
-                  <TableHead className="font-bold text-gray-700">Sözleşme Durumu</TableHead>
-                  <TableHead className="font-bold text-gray-700 text-right">İşlemler</TableHead>
-                </TableRow>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead
+                        key={header.id}
+                        className={
+                          header.column.id === "customerInfo"
+                            ? "whitespace-normal max-w-[200px]"
+                            : header.column.id === "actions"
+                            ? "text-right"
+                            : ""
+                        }
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
               </TableHeader>
               <TableBody>
-                {filteredAgreements.map((agreement) => (
-                  <TableRow key={agreement.id} className="border-gray-50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-indigo-50/30">
-                    <TableCell className="font-bold py-6">{agreement.customerInfo}</TableCell>
-                    <TableCell className="text-gray-600 font-mono font-medium">{agreement.agreementNumber}</TableCell>
-                    <TableCell className="text-gray-600 font-medium">{agreement.startDate}</TableCell>
-                    <TableCell className="text-gray-600 font-medium">{agreement.endDate}</TableCell>
-                    <TableCell>
-                      <Badge className={`border-0 px-3 py-1 ${getStatusBadgeClass(agreement.status)}`}>
-                        {getStatusText(agreement.status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-2 justify-end">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-9 w-9 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
-                          onClick={() => router.push(`/management/agreements/${agreement.id}`)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-9 w-9 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"
-                          onClick={() => handleEditAgreement(agreement)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className={
+                          cell.column.id === "customerInfo"
+                            ? "font-medium whitespace-normal break-words max-w-[200px]"
+                            : cell.column.id === "actions"
+                            ? "text-right"
+                            : ""
+                        }
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between p-6 border-t border-gray-100 bg-gradient-to-r from-gray-50/50 to-slate-50/50 gap-4">
-            <div className="flex items-center gap-3">
-              <Select defaultValue="10">
-                <SelectTrigger className="w-20 border-gray-200 bg-white/80">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="25">25</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                </SelectContent>
-              </Select>
-              <span className="text-sm text-gray-600 font-medium">kayıt gösteriliyor</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="border-gray-200 bg-white/80 hover:bg-gray-50 gap-2">
-                <ChevronLeft className="h-4 w-4" />
-                <span>Önceki</span>
-              </Button>
-              <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg">1</Button>
-              <Button variant="outline" size="sm" className="border-gray-200 bg-white/80 hover:bg-gray-50 gap-2">
-                <span>Sonraki</span>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <p className="text-sm text-muted-foreground">
+                {table.getFilteredRowModel().rows.length === 0
+                  ? "0 kayıttan 0 - 0 arası"
+                  : `${table.getFilteredRowModel().rows.length} kayıttan ${
+                      table.getState().pagination.pageIndex *
+                        table.getState().pagination.pageSize +
+                      1
+                    } - ${Math.min(
+                      table.getFilteredRowModel().rows.length,
+                      (table.getState().pagination.pageIndex + 1) *
+                        table.getState().pagination.pageSize
+                    )} arası`}
+              </p>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                  aria-label="Önceki sayfa"
+                >
+                  Önceki
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-current="page"
+                  aria-label={`Sayfa ${
+                    table.getState().pagination.pageIndex + 1
+                  }`}
+                  disabled
+                >
+                  <span className="text-sm">
+                    {table.getState().pagination.pageIndex + 1}
+                  </span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                  aria-label="Sonraki sayfa"
+                >
+                  Sonraki
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
-      
+
       <AgreementFormDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
@@ -277,5 +517,5 @@ export default function AgreementsPage() {
         isEditMode={isEditMode}
       />
     </ManagementMainLayout>
-  )
+  );
 }

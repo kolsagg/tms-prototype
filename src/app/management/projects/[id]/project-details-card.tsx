@@ -26,11 +26,11 @@ export function ProjectDetailsCard({ project }: ProjectDetailsCardProps) {
   }
 
   return (
-    <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-md overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-slate-700 to-slate-800 text-white pb-4">
+    <Card className="bg-white border border-gray-200 rounded-lg shadow-sm ">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <FileText className="h-5 w-5 text-slate-200" />
+            <FileText className="h-5 w-5" />
             <h2 className="text-lg font-semibold">Proje Detayı</h2>
           </div>
           <ProjectEditDialog project={project} />

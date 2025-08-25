@@ -30,6 +30,11 @@ import {
 } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   CalendarRange,
   Eye,
   FileDown,
@@ -146,12 +151,13 @@ const initialCustomers: Customer[] = [
 export default function ManagementCustomersPage() {
   const router = useRouter();
   const [globalFilter, setGlobalFilter] = useState("");
-  const [dateFrom, setDateFrom] = useState<string>("");
-  const [dateTo, setDateTo] = useState<string>("");
+  const [dateRange, setDateRange] = useState<{from?: string; to?: string}>({});
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [customers, setCustomers] = useState(initialCustomers);
   const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [accordionValue, setAccordionValue] = useState<string | undefined>("filters");
 
   const columns = useMemo<ColumnDef<Customer>[]>(
     () => [
@@ -249,8 +255,7 @@ export default function ManagementCustomersPage() {
   };
 
   const handleClearFilters = () => {
-    setDateFrom("");
-    setDateTo("");
+    setDateRange({});
     setGlobalFilter("");
     table.setPageIndex(0);
   };
@@ -287,60 +292,96 @@ export default function ManagementCustomersPage() {
   const breadcrumbItems = [{ label: "Anasayfa", href: "/management/dashboard" }, { label: "Müşteri Listesi" }]
 
   return (
-    <ManagementMainLayout>
+    <ManagementMainLayout contentClassName="max-w-none">
       <Breadcrumb items={breadcrumbItems} />
 
       <PageHeader title="Müşteri Listesi" subtitle="Müşterileri görüntüleyin ve yönetin" />
 
       <Card className="bg-white/90 backdrop-blur border-gray-100">
-        <CardHeader className="border-b">
-          <CardTitle className="text-base font-semibold">
-            Filtreler
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Accordion type="single" collapsible defaultValue="filters">
-            <AccordionItem value="filters">
-              <AccordionTrigger className="px-0">
-                Sözleşme Bitiş. Tarih Aralığı
+        <CardContent className="p-0">
+          <Accordion type="single" collapsible value={accordionValue} onValueChange={setAccordionValue}>
+            <AccordionItem value="filters" className="border-0">
+              <AccordionTrigger className="px-6 py-4 hover:no-underline border-b">
+                <CardTitle className="text-base font-semibold">
+                  Filtreler
+                </CardTitle>
               </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="flex items-center gap-2 rounded-md border border-input px-3 py-1.5 bg-transparent"
-                        aria-label="Tarih aralığı"
-                      >
-                        <CalendarRange className="size-4 text-muted-foreground" />
-                        <Input
-                          aria-label="Başlangıç tarihi"
-                          type="date"
-                          value={dateFrom}
-                          onChange={(e) => setDateFrom(e.target.value)}
-                          className="h-9 w-40 border-0 px-0"
-                        />
-                        <span className="text-muted-foreground">-</span>
-                        <Input
-                          aria-label="Bitiş tarihi"
-                          type="date"
-                          value={dateTo}
-                          onChange={(e) => setDateTo(e.target.value)}
-                          className="h-9 w-40 border-0 px-0"
-                        />
-                      </div>
-                    </div>
+              <AccordionContent className="px-6 pb-6">
+                <div className="space-y-4 pt-4">
+                  <div className="space-y-2 space-x-2">
+                    <label className="text-sm font-medium">
+                      Sözleşme Bitiş Tarih Aralığı:
+                    </label>
+                    <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-[280px] justify-start text-left font-normal"
+                        >
+                          <CalendarRange className="mr-2 h-4 w-4" />
+                          {dateRange.from && dateRange.to ? (
+                            `${new Date(dateRange.from).toLocaleDateString('tr-TR')} - ${new Date(dateRange.to).toLocaleDateString('tr-TR')}`
+                          ) : dateRange.from ? (
+                            `${new Date(dateRange.from).toLocaleDateString('tr-TR')} - Bitiş tarihi seçin`
+                          ) : (
+                            <span className="text-muted-foreground">Tarih aralığı seçin</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-4 bg-white border shadow-lg z-50" align="start">
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Başlangıç</label>
+                              <Input
+                                type="date"
+                                value={dateRange.from || ""}
+                                onChange={(e) => setDateRange({...dateRange, from: e.target.value})}
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Bitiş</label>
+                              <Input
+                                type="date"
+                                value={dateRange.to || ""}
+                                onChange={(e) => setDateRange({...dateRange, to: e.target.value})}
+                                className="w-full"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setDateRange({});
+                                setIsDatePickerOpen(false);
+                              }}
+                            >
+                              Temizle
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => setIsDatePickerOpen(false)}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                            >
+                              Uygula
+                            </Button>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex gap-2">
                     <Button
                       variant="outline"
                       onClick={handleClearFilters}
-                      aria-label="Filtreleri temizle"
                     >
                       Temizle
                     </Button>
-                    <Button onClick={handleFilter} aria-label="Filtreleme yap">
+                    <Button onClick={handleFilter}>
                       Filtreleme Yap
                     </Button>
                   </div>
@@ -394,7 +435,6 @@ export default function ManagementCustomersPage() {
 
               <div className="flex items-center gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Ara:</span>
                   <div className="relative">
                     <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                     <Input

@@ -61,7 +61,7 @@ export default function TaskDetailPage() {
   ];
 
   return (
-    <ManagementMainLayout>
+    <ManagementMainLayout contentClassName="max-w-none">
       <div className="space-y-6">
         {/* Header */}
         <div className="mb-6">
@@ -74,9 +74,9 @@ export default function TaskDetailPage() {
         </div>
 
         {/* Task Details and File Upload Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Task Details Card - Takes 2/3 of space */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <TaskDetailsCard task={task} />
           </div>
           
@@ -89,7 +89,7 @@ export default function TaskDetailPage() {
         {/* Tabs Section - Agreements style */}
         <Card className="bg-white/90 backdrop-blur border-gray-100">
           <CardContent className="p-0">
-            <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-100/50 px-6 pt-4 pb-0">
+            <div className="px-6 pt-4 pb-0">
               <div className="flex space-x-6">
                 <button
                   onClick={() => setActiveTab("time-entries")}

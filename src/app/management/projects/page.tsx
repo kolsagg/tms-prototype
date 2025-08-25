@@ -217,61 +217,61 @@ export default function ManagementProjectsPage() {
       <PageHeader title="Proje Listesi" subtitle="Projeleri görüntüleyin ve yönetin" />
 
       <Card className="bg-white/90 backdrop-blur border-gray-100">
-        <CardHeader className="border-b">
-          <CardTitle className="text-base font-semibold">
-            Filtrelenebilir Panel
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <Accordion type="single" collapsible defaultValue="filters">
-            <AccordionItem value="filters">
-              <AccordionTrigger className="px-0">
-                Müşteri Bilgisi
+            <AccordionItem value="filters" className="border-0">
+              <AccordionTrigger className="px-6 py-4 hover:no-underline border-b">
+                <CardTitle className="text-base font-semibold">
+                  Filtreler
+                </CardTitle>
               </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-3">
-                      <Select 
-                        value={customerFilter} 
-                        onValueChange={setCustomerFilter}
-                      >
-                        <SelectTrigger className="w-[400px]">
-                          <SelectValue placeholder="-- Seçiniz --" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white max-h-60">
-                          <SelectItem value="all" className="hover:bg-gray-100">
-                            Tümü
-                          </SelectItem>
-                          {uniqueCustomers.map((customer) => (
-                            <SelectItem 
-                              key={customer} 
-                              value={customer}
-                              className="hover:bg-gray-100"
-                            >
-                              {customer}
+              <AccordionContent className="px-6 pb-6">
+                <div className="space-y-4 pt-4">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm font-medium">Müşteri Bilgisi:</label>
+                      <div className="flex items-center gap-3">
+                        <Select 
+                          value={customerFilter} 
+                          onValueChange={setCustomerFilter}
+                        >
+                          <SelectTrigger className="w-[400px]">
+                            <SelectValue placeholder="-- Seçiniz --" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white max-h-60">
+                            <SelectItem value="all" className="hover:bg-gray-100">
+                              Tümü
                             </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                            {uniqueCustomers.map((customer) => (
+                              <SelectItem 
+                                key={customer} 
+                                value={customer}
+                                className="hover:bg-gray-100"
+                              >
+                                {customer}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="outline"
-                      onClick={handleClearFilters}
-                      aria-label="Filtreleri temizle"
-                    >
-                      Temizle
-                    </Button>
-                    <Button 
-                      onClick={handleFilter} 
-                      aria-label="Filtreleme yap"
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                    >
-                      Filtreleme Yap
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={handleClearFilters}
+                        aria-label="Filtreleri temizle"
+                      >
+                        Temizle
+                      </Button>
+                      <Button 
+                        onClick={handleFilter} 
+                        aria-label="Filtreleme yap"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                      >
+                        Filtreleme Yap
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </AccordionContent>

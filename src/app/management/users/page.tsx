@@ -133,7 +133,7 @@ export default function UserList() {
     };
 
     return (
-        <ManagementMainLayout>
+        <ManagementMainLayout contentClassName="max-w-none">
             <div className="space-y-6">
                 <Breadcrumb items={breadcrumbItems} />
                 <PageHeader
@@ -141,14 +141,14 @@ export default function UserList() {
                     subtitle="Kullanıcılarınızı filtreleyin, arayın ve yönetin"
                 />
                 <Card className="bg-white shadow-sm">
-                    <CardHeader className="bg-slate-600 text-white rounded-t-lg">
+                    <CardHeader className="rounded-t-lg">
                         <CardTitle className="text-lg font-semibold">
                             Kullanıcı Listesi
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
                         {/* Top Controls */}
-                        <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center p-4 border-b bg-gray-50">
+                        <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center p-4 border-b">
                             <div className="flex items-center gap-3">
                                 <Select
                                     value={rowsPerPage}
@@ -342,7 +342,7 @@ export default function UserList() {
                         </div>
 
                         {/* Pagination */}
-                        <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-t bg-gray-50">
+                        <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-t">
                             <div className="text-sm text-gray-600 mb-2 sm:mb-0">
                                 {totalItems} kayıttan {startIndex + 1} -{" "}
                                 {Math.min(endIndex, totalItems)} arasındaki

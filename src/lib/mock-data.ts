@@ -50,6 +50,20 @@ export interface User {
   role: string;
 }
 
+export interface SupportTicket {
+  id: number;
+  title: string;
+  project: string;
+  assignee: string;
+  priority: "Düşük" | "Orta" | "Yüksek";
+  status: "Devam Ediyor" | "Başlamadı" | "Tamamlandı";
+  startDate: string; // DD.MM.YYYY formatında
+  endDate: string; // DD.MM.YYYY formatında
+  estimateHours: number;
+  completedHours: number;
+  completionPercentage: number;
+}
+
 export interface LeaveRequest {
   id: number;
   personName: string;
@@ -784,5 +798,204 @@ export const mockLeaveRequests: LeaveRequest[] = [
     status: "Onaylandı",
     approver: "İbrahim Demir",
     createdDate: "25.07.2025 17:41"
+  }
+];
+
+// Support Tickets Mock Data
+export const mockSupportTickets: SupportTicket[] = [
+  {
+    id: 1,
+    title: "Ana Sayfa Tasarımı",
+    project: "ConcentIT Web Sitesi",
+    assignee: "Ahmet Yılmaz",
+    priority: "Yüksek",
+    status: "Devam Ediyor",
+    startDate: "01.12.2024",
+    endDate: "15.12.2024",
+    estimateHours: 40,
+    completedHours: 15,
+    completionPercentage: 38
+  },
+  {
+    id: 2,
+    title: "Backend API Geliştirme",
+    project: "ConcentIT Web Sitesi",
+    assignee: "Mehmet Demir",
+    priority: "Yüksek",
+    status: "Devam Ediyor",
+    startDate: "05.12.2024",
+    endDate: "20.12.2024",
+    estimateHours: 60,
+    completedHours: 17,
+    completionPercentage: 28
+  },
+  {
+    id: 3,
+    title: "Ürün Kataloğu",
+    project: "E-ticaret Platformu",
+    assignee: "Ayşe Kaya",
+    priority: "Orta",
+    status: "Devam Ediyor",
+    startDate: "10.12.2024",
+    endDate: "30.12.2024",
+    estimateHours: 80,
+    completedHours: 8,
+    completionPercentage: 10
+  },
+  {
+    id: 4,
+    title: "Sepet İşlemleri",
+    project: "E-ticaret Platformu",
+    assignee: "Fatma Öz",
+    priority: "Yüksek",
+    status: "Başlamadı",
+    startDate: "15.12.2024",
+    endDate: "25.12.2024",
+    estimateHours: 35,
+    completedHours: 0,
+    completionPercentage: 0
+  },
+  {
+    id: 5,
+    title: "Login Ekranı",
+    project: "Mobil Uygulama",
+    assignee: "Can Şen",
+    priority: "Orta",
+    status: "Başlamadı",
+    startDate: "01.01.2025",
+    endDate: "10.01.2025",
+    estimateHours: 25,
+    completedHours: 0,
+    completionPercentage: 0
+  },
+  {
+    id: 6,
+    title: "Push Notification",
+    project: "Mobil Uygulama",
+    assignee: "-",
+    priority: "Düşük",
+    status: "Başlamadı",
+    startDate: "05.01.2025",
+    endDate: "15.01.2025",
+    estimateHours: 30,
+    completedHours: 0,
+    completionPercentage: 0
+  },
+  {
+    id: 7,
+    title: "Müşteri Yönetimi",
+    project: "CRM Sistemi",
+    assignee: "Hasan Çelik",
+    priority: "Yüksek",
+    status: "Başlamadı",
+    startDate: "20.12.2024",
+    endDate: "10.01.2025",
+    estimateHours: 50,
+    completedHours: 0,
+    completionPercentage: 0
+  },
+  {
+    id: 8,
+    title: "Raporlama Modülü",
+    project: "CRM Sistemi",
+    assignee: "Zeynep Akar",
+    priority: "Orta",
+    status: "Başlamadı",
+    startDate: "25.12.2024",
+    endDate: "20.01.2025",
+    estimateHours: 45,
+    completedHours: 0,
+    completionPercentage: 0
+  },
+  {
+    id: 9,
+    title: "Dashboard Geliştirme",
+    project: "İnsan Kaynakları Sistemi",
+    assignee: "Ali Veli",
+    priority: "Orta",
+    status: "Devam Ediyor",
+    startDate: "12.12.2024",
+    endDate: "28.12.2024",
+    estimateHours: 55,
+    completedHours: 22,
+    completionPercentage: 40
+  },
+  {
+    id: 10,
+    title: "Performans Değerlendirme",
+    project: "İnsan Kaynakları Sistemi",
+    assignee: "Seda Koç",
+    priority: "Düşük",
+    status: "Devam Ediyor",
+    startDate: "18.12.2024",
+    endDate: "05.01.2025",
+    estimateHours: 65,
+    completedHours: 13,
+    completionPercentage: 20
+  },
+  {
+    id: 11,
+    title: "İzin Takip Modülü",
+    project: "İnsan Kaynakları Sistemi",
+    assignee: "Murat Kaya",
+    priority: "Yüksek",
+    status: "Devam Ediyor",
+    startDate: "22.12.2024",
+    endDate: "12.01.2025",
+    estimateHours: 70,
+    completedHours: 35,
+    completionPercentage: 50
+  },
+  {
+    id: 12,
+    title: "Stok Yönetimi",
+    project: "E-ticaret Platformu",
+    assignee: "Elif Arslan",
+    priority: "Orta",
+    status: "Devam Ediyor",
+    startDate: "28.12.2024",
+    endDate: "15.01.2025",
+    estimateHours: 48,
+    completedHours: 12,
+    completionPercentage: 25
+  },
+  {
+    id: 13,
+    title: "Ödeme Sistemi Entegrasyonu",
+    project: "E-ticaret Platformu",
+    assignee: "Kerem Özkan",
+    priority: "Yüksek",
+    status: "Devam Ediyor",
+    startDate: "02.01.2025",
+    endDate: "20.01.2025",
+    estimateHours: 85,
+    completedHours: 17,
+    completionPercentage: 20
+  },
+  {
+    id: 14,
+    title: "Sosyal Medya Entegrasyonu",
+    project: "ConcentIT Web Sitesi",
+    assignee: "Deniz Yıldız",
+    priority: "Düşük",
+    status: "Devam Ediyor",
+    startDate: "08.01.2025",
+    endDate: "25.01.2025",
+    estimateHours: 32,
+    completedHours: 8,
+    completionPercentage: 25
+  },
+  {
+    id: 15,
+    title: "Arama Fonksiyonu",
+    project: "Mobil Uygulama",
+    assignee: "Gizem Polat",
+    priority: "Orta",
+    status: "Devam Ediyor",
+    startDate: "15.01.2025",
+    endDate: "02.02.2025",
+    estimateHours: 42,
+    completedHours: 8,
+    completionPercentage: 19
   }
 ];

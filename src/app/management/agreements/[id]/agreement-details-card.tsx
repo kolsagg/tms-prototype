@@ -11,13 +11,13 @@ export function AgreementDetailsCard({ agreement }: AgreementDetailsCardProps) {
   const getStatusColor = (status: Agreement["status"]) => {
     switch (status) {
       case "active":
-        return "bg-gradient-to-r from-green-100 to-emerald-100 text-green-700"
+        return "bg-green-100 text-green-800"
       case "expired":
-        return "bg-gradient-to-r from-orange-100 to-red-100 text-orange-700"
+        return "bg-red-100 text-red-800"
       case "draft":
-        return "bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700"
+        return "bg-yellow-100 text-yellow-800"
       default:
-        return "bg-gray-100 text-gray-700"
+        return "bg-gray-100 text-gray-800"
     }
   }
 
@@ -34,33 +34,6 @@ export function AgreementDetailsCard({ agreement }: AgreementDetailsCardProps) {
     }
   }
 
-  const getStatusIcon = (status: Agreement["status"]) => {
-    switch (status) {
-      case "active":
-        return "✅"
-      case "expired":
-        return "⚠️"
-      case "draft":
-        return "📝"
-      default:
-        return "❓"
-    }
-  }
-
-  // Calculate duration in days
-  const calculateDuration = () => {
-    const parseDate = (dateStr: string) => {
-      const [day, month, year] = dateStr.split('.');
-      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    };
-    
-    const startDate = parseDate(agreement.startDate);
-    const endDate = parseDate(agreement.endDate);
-    const diffTime = endDate.getTime() - startDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
   // Calculate remaining or expired days
   const calculateRemainingDays = () => {
     const parseDate = (dateStr: string) => {
@@ -76,81 +49,110 @@ export function AgreementDetailsCard({ agreement }: AgreementDetailsCardProps) {
   };
 
   const remainingDays = calculateRemainingDays();
-  const totalDuration = calculateDuration();
 
   return (
-    <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-md overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-100/50 pb-6">
+    <Card className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      <CardHeader className="border-b border-gray-200 px-6 py-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <CardTitle className="text-2xl font-bold text-gray-900">Sözleşme Detayları</CardTitle>
+          <CardTitle className="text-lg font-semibold text-gray-900">{agreement.customerInfo}</CardTitle>
           <div className="flex gap-3">
-            <Badge className={`border-0 px-4 py-2 text-sm font-medium ${getStatusColor(agreement.status)}`}>
-              {getStatusIcon(agreement.status)} {getStatusText(agreement.status)}
+            <Badge className={`border-0 px-3 py-1 text-sm font-medium ${getStatusColor(agreement.status)}`}>
+              {getStatusText(agreement.status)}
             </Badge>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          <div className="space-y-6">
-            <div className="flex justify-between items-center py-4 group">
-              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Müşteri Bilgisi</span>
-              <span className="text-sm text-gray-900 font-bold bg-gray-50 px-3 py-1 rounded-lg">{agreement.customerInfo}</span>
+      <CardContent className="p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Sol Kolon - Müşteri Bilgileri */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-600 mb-4">Müşteri Adı:</h3>
+            <div className="text-base font-semibold text-green-600 mb-6">
+              {agreement.customerInfo}
             </div>
-            <Separator className="bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-            <div className="flex justify-between items-center py-4">
-              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Sözleşme Numarası</span>
-              <span className="text-sm text-gray-900 font-mono font-medium bg-blue-50 px-3 py-1 rounded-lg">{agreement.agreementNumber}</span>
-            </div>
-            <Separator className="bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-            <div className="flex justify-between items-center py-4">
-              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Sözleşme Süresi</span>
-              <span className="text-sm text-gray-900 font-medium">📅 {totalDuration} gün</span>
-            </div>
-            <Separator className="bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-            <div className="py-4 space-y-3">
-              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide block">Açıklama</span>
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100">
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {agreement.customerInfo} ile yapılan sözleşme detayları ve koşulları bu bölümde yer almaktadır.
-                </p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium text-gray-600">Adres:</label>
+                <div className="text-sm text-gray-900 mt-1">
+                  Küçükbakkalköy Mah. Vedat Günyol Cad, Defne Sk No:1 Kat:24<br />
+                  No: 2401-2402 Ataşehir/İstanbul
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-600">E-Posta:</label>
+                <div className="text-sm text-gray-900 mt-1">
+                  contact@concentit.com
+                </div>
               </div>
             </div>
           </div>
-          <div className="space-y-6">
-            <div className="flex justify-between items-center py-4">
-              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Başlangıç</span>
-              <span className="text-sm text-gray-900 font-medium bg-blue-50 px-3 py-1 rounded-lg">
-                {agreement.startDate}
-              </span>
-            </div>
-            <Separator className="bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-            <div className="flex justify-between items-center py-4">
-              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Bitiş</span>
-              <span className="text-sm text-gray-900 font-medium bg-green-50 px-3 py-1 rounded-lg">
-                {agreement.endDate}
-              </span>
-            </div>
-            <Separator className="bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-            <div className="flex justify-between items-center py-4">
-              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">İşlem Tarihi</span>
-              <span className="text-sm text-gray-900 font-medium">📝 13.08.2025 10:24</span>
-            </div>
-            <Separator className="bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-            <div className="flex justify-between items-center py-4">
-              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Güncelleme Tarihi</span>
-              <span className="text-sm text-gray-900 font-medium">🔄 13.08.2025 10:26</span>
-            </div>
-            <Separator className="bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-            <div className="flex justify-between items-center py-4">
-              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-                {remainingDays >= 0 ? "Kalan Süre" : "Süre Aşımı"}
-              </span>
-              <div className="flex items-center gap-3">
-                <span className={`text-sm font-bold ${remainingDays >= 0 ? "text-green-600" : "text-red-600"}`}>
-                  {remainingDays >= 0 ? `${remainingDays} gün kaldı` : `${Math.abs(remainingDays)} gün geçti`}
-                </span>
+
+          {/* Orta Kolon - İletişim Bilgileri */}
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-600">Telefon:</label>
+              <div className="text-sm text-gray-900 mt-1">
+                0 545 842 0511
               </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-600">Açıklama:</label>
+              <div className="text-sm text-gray-900 mt-1">
+                IT Danışmanlık
+              </div>
+            </div>
+          </div>
+
+          {/* Sağ Kolon - Tarih Bilgileri */}
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-600">İşlem Tarihi:</label>
+              <div className="text-sm text-gray-900 mt-1">
+                15.01.2024 09:30
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-600">Güncelleme Tarihi:</label>
+              <div className="text-sm text-gray-900 mt-1">
+                20.05.2024 14:15
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Separator className="my-6 bg-gray-200" />
+        
+        {/* Alt Bölüm - Sözleşme Detayları */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div>
+            <label className="text-sm font-medium text-gray-600">Sözleşme Numarası:</label>
+            <div className="text-sm font-mono text-gray-900 mt-1">
+              {agreement.agreementNumber}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-600">Başlangıç Tarihi:</label>
+            <div className="text-sm text-gray-900 mt-1">
+              {agreement.startDate}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-600">Bitiş Tarihi:</label>
+            <div className="text-sm text-gray-900 mt-1">
+              {agreement.endDate}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-600">Kalan Süre:</label>
+            <div className={`text-sm font-medium mt-1 ${remainingDays >= 0 ? "text-green-600" : "text-red-600"}`}>
+              {remainingDays >= 0 ? `${remainingDays} gün kaldı` : `${Math.abs(remainingDays)} gün geçti`}
             </div>
           </div>
         </div>

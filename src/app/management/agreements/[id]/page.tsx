@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/ui/page-header"
 import { AgreementDetailsCard } from "@/app/management/agreements/[id]/agreement-details-card"
 import { FileUploadCard } from "@/components/ui/file-upload-card"
 import { ContactsTable } from "@/app/management/agreements/[id]/contacts-table"
+import { ProjectsTable } from "@/app/management/agreements/[id]/projects-table"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { FileText, Users } from "lucide-react"
 import { mockAgreements } from "@/lib/mock-data"
@@ -42,8 +43,8 @@ export default function AgreementDetailPage() {
         </div>
         <div className="space-y-8">
           {/* Tabs Card */}
-          <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-md overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-100/50 pb-6">
+          <Card className="bg-white border border-gray-200 rounded-lg shadow-sm">
+            <CardHeader className="border-b border-gray-100/50 pb-6">
               <div className="flex space-x-6">
                 <button
                   onClick={() => setActiveTab("contacts")}
@@ -72,12 +73,8 @@ export default function AgreementDetailPage() {
             <CardContent className="p-0">
               {activeTab === "contacts" && <ContactsTable contacts={contacts} />}
               {activeTab === "projects" && (
-                <div className="p-12">
-                  <div className="text-center">
-                    <FileText className="h-16 w-16 mx-auto text-gray-400 mb-6" />
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Projeler</h3>
-                    <p className="text-gray-500">Bu sözleşmeye ait proje bilgisi bulunmamaktadır.</p>
-                  </div>
+                <div className="p-6">
+                  <ProjectsTable />
                 </div>
               )}
             </CardContent>

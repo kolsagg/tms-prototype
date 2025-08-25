@@ -87,7 +87,7 @@ export function ProjectEditDialog({ project, trigger }: ProjectEditDialogProps) 
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="secondary" size="sm" className="bg-slate-600 hover:bg-slate-500 text-white border-0 text-xs">
+          <Button variant="secondary" size="sm" className="border text-s hover:bg-gray-300">
             <Edit2 className="h-3 w-3 mr-1" />
             Düzenle
           </Button>

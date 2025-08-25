@@ -40,6 +40,36 @@ export interface Agreement {
   status: "active" | "expired" | "draft";
 }
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  lastLogin: string;
+  status: "Aktif" | "Pasif";
+  role: string;
+}
+
+export interface LeaveRequest {
+  id: number;
+  personName: string;
+  leaveType: string;
+  startDate: string;
+  endDate: string;
+  status: "Onaylandı" | "Beklemede" | "Reddedildi";
+  approver?: string;
+  createdDate: string;
+}
+
+export interface Agreement {
+  id: number;
+  customerInfo: string;
+  agreementNumber: string;
+  startDate: string; // DD.MM.YYYY formatında
+  endDate: string; // DD.MM.YYYY formatında
+  status: "active" | "expired" | "draft";
+}
+
 export const mockCustomers: Customer[] = [
   {
     id: 1,
@@ -564,20 +594,195 @@ export const mockJobTypes: JobType[] = [
 ];
 
 // Kullanıcılar (Atanan Kişiler)
-export interface User {
-  id: string;
-  name: string;
-  email?: string;
-  role?: string;
-}
-
 export const mockUsers: User[] = [
-  { id: "1", name: "Ahmet Yılmaz", email: "ahmet@company.com", role: "Developer" },
-  { id: "2", name: "Ayşe Demir", email: "ayse@company.com", role: "Designer" },
-  { id: "3", name: "Mehmet Kaya", email: "mehmet@company.com", role: "Tester" },
-  { id: "4", name: "Fatma Özkan", email: "fatma@company.com", role: "Project Manager" },
-  { id: "5", name: "Ali Çelik", email: "ali@company.com", role: "Developer" },
-  { id: "6", name: "Zeynep Arslan", email: "zeynep@company.com", role: "UI/UX Designer" },
-  { id: "7", name: "Can Şahin", email: "can@company.com", role: "DevOps" },
-  { id: "8", name: "Elif Koç", email: "elif@company.com", role: "Business Analyst" }
+  { 
+    id: "1", 
+    name: "Ali Yıldırım", 
+    email: "ali.yildirim@concentit.com", 
+    phone: "0 533 018 1100",
+    lastLogin: "02.08.2025 09:38",
+    status: "Aktif",
+    role: "Developer" 
+  },
+  { 
+    id: "2", 
+    name: "Alper Atak", 
+    email: "alper.atak@concentit.com", 
+    phone: "0 532 304 8784",
+    lastLogin: "13.08.2025 09:53",
+    status: "Aktif",
+    role: "Designer" 
+  },
+  { 
+    id: "3", 
+    name: "Ata Çetinkol", 
+    email: "ata.cetinkol@concentit.com", 
+    phone: "0 546 686 7009",
+    lastLogin: "13.08.2025 09:46",
+    status: "Aktif",
+    role: "Tester" 
+  },
+  { 
+    id: "4", 
+    name: "Berkcan Temur", 
+    email: "berkcan.temur@concentit.com", 
+    phone: "0 539 876 8768",
+    lastLogin: "13.08.2025 15:43",
+    status: "Aktif",
+    role: "Project Manager" 
+  },
+  { 
+    id: "5", 
+    name: "Burak Karadağ", 
+    email: "burak.karadag@concentit.com", 
+    phone: "0 505 095 2936",
+    lastLogin: "02.08.2025 11:06",
+    status: "Aktif",
+    role: "Developer" 
+  },
+  { 
+    id: "6", 
+    name: "Elif Zehra Alp", 
+    email: "elif.alp@concentit.com", 
+    phone: "0 537 224 6476",
+    lastLogin: "25.07.2025 02:46",
+    status: "Aktif",
+    role: "UI/UX Designer" 
+  },
+  { 
+    id: "7", 
+    name: "Emre Kolunsağ", 
+    email: "emre.kolunsag@concentit.com", 
+    phone: "0 534 834 5813",
+    lastLogin: "25.08.2025 09:38",
+    status: "Aktif",
+    role: "DevOps" 
+  },
+  { 
+    id: "8", 
+    name: "Emre Zeyrek", 
+    email: "emre.zeyrek@concentit.com", 
+    phone: "0 544 723 9798",
+    lastLogin: "30.07.2025 11:24",
+    status: "Pasif",
+    role: "Business Analyst" 
+  },
+  { 
+    id: "9", 
+    name: "Erhan Can Polat", 
+    email: "erhan.polat@concentit.com", 
+    phone: "0 545 522 3575",
+    lastLogin: "02.08.2025 09:30",
+    status: "Aktif",
+    role: "Business Analyst" 
+  },
+  { 
+    id: "10", 
+    name: "Faruk Serdar Köse", 
+    email: "serdar.kose@concentit.com", 
+    phone: "0 543 158 2958",
+    lastLogin: "02.08.2025 11:04",
+    status: "Aktif",
+    role: "Developer" 
+  }
+];
+
+// İzin Başvuruları
+export const mockLeaveRequests: LeaveRequest[] = [
+  {
+    id: 1,
+    personName: "Ali Yıldırım",
+    leaveType: "Yıllık İzin",
+    startDate: "01.09.2025",
+    endDate: "08.09.2025",
+    status: "Onaylandı",
+    approver: "İbrahim Demir",
+    createdDate: "02.08.2025 11:29"
+  },
+  {
+    id: 2,
+    personName: "Alper Atak",
+    leaveType: "Sağlık Raporu",
+    startDate: "04.09.2025",
+    endDate: "15.09.2025",
+    status: "Onaylandı",
+    approver: "Fatih Yasak",
+    createdDate: "01.08.2025 17:16"
+  },
+  {
+    id: 3,
+    personName: "Ata Çetinkol",
+    leaveType: "Yıllık İzin",
+    startDate: "01.09.2025",
+    endDate: "08.09.2025",
+    status: "Beklemede",
+    createdDate: "02.08.2025 11:23"
+  },
+  {
+    id: 4,
+    personName: "Ata Çetinkol",
+    leaveType: "Ücretsiz İzin",
+    startDate: "01.07.2025",
+    endDate: "02.07.2025",
+    status: "Beklemede",
+    createdDate: "02.08.2025 12:57"
+  },
+  {
+    id: 5,
+    personName: "Elif Zehra Alp",
+    leaveType: "İdari İzin",
+    startDate: "31.07.2025",
+    endDate: "31.07.2025",
+    status: "Reddedildi",
+    approver: "Fatih Yasak",
+    createdDate: "01.08.2025 18:00"
+  },
+  {
+    id: 6,
+    personName: "Elif Zehra Alp",
+    leaveType: "Ücretsiz İzin",
+    startDate: "21.07.2025",
+    endDate: "27.07.2025",
+    status: "Onaylandı",
+    approver: "Fatih Yasak",
+    createdDate: "01.08.2025 17:16"
+  },
+  {
+    id: 7,
+    personName: "Emre Kolunsağ",
+    leaveType: "Babalık İzni",
+    startDate: "01.09.2025",
+    endDate: "08.09.2025",
+    status: "Beklemede",
+    createdDate: "01.08.2025 10:32"
+  },
+  {
+    id: 8,
+    personName: "Fatih Taşpın",
+    leaveType: "Yıllık İzin",
+    startDate: "08.07.2025",
+    endDate: "11.07.2025",
+    status: "Onaylandı",
+    approver: "İbrahim Demir",
+    createdDate: "25.07.2025 19:05"
+  },
+  {
+    id: 9,
+    personName: "Fatih Yasak",
+    leaveType: "Yıllık İzin",
+    startDate: "05.08.2025",
+    endDate: "08.08.2025",
+    status: "Beklemede",
+    createdDate: "02.08.2025 10:41"
+  },
+  {
+    id: 10,
+    personName: "İbrahim Demir",
+    leaveType: "Yıllık İzin",
+    startDate: "28.07.2025",
+    endDate: "31.07.2025",
+    status: "Onaylandı",
+    approver: "İbrahim Demir",
+    createdDate: "25.07.2025 17:41"
+  }
 ];

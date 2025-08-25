@@ -34,6 +34,19 @@ interface LeaveFormDialogProps {
   isEdit?: boolean;
 }
 
+/**
+ * A client-side React dialog component that renders a form for creating or editing a leave request.
+ *
+ * The dialog is opened via the provided `trigger` node and maintains internal state for visibility
+ * and form fields. When `isEdit` is true and `editData` is provided, the form is pre-filled with that data.
+ * Submitting the form logs the form data to the console, closes the dialog, and resets the form to its defaults;
+ * cancelling also closes and resets the form. This component does not perform any network submission.
+ *
+ * @param trigger - React node used as the dialog open trigger.
+ * @param editData - Optional initial form values to populate the form when editing.
+ * @param isEdit - When true, the dialog operates in edit mode and uses `editData` to initialize fields.
+ * @returns The rendered dialog JSX.
+ */
 export function LeaveFormDialog({ trigger, editData, isEdit = false }: LeaveFormDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<LeaveFormData>({

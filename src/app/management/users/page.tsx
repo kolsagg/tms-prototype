@@ -39,7 +39,15 @@ import { mockUsers, type User } from "@/lib/mock-data";
 import { PageHeader } from "@/components/ui/page-header";
 import { UserFormDialog } from "./user-form-dialog";
 
-// Kullanıcı isminden baş harfleri çıkaran yardımcı fonksiyon
+/**
+ * Returns up to two uppercase initials derived from a person's name.
+ *
+ * Splits the input on spaces, takes the first character of each word, concatenates them,
+ * converts to uppercase, and returns at most the first two characters.
+ *
+ * @param name - The full name (one or more words) to derive initials from.
+ * @returns A string of up to two uppercase initials (empty string if `name` is empty).
+ */
 function getInitials(name: string): string {
   return name
     .split(' ')
@@ -49,7 +57,15 @@ function getInitials(name: string): string {
     .slice(0, 2); // Maksimum 2 harf
 }
 
-// Avatar rengi için hash fonksiyonu
+/**
+ * Deterministically selects a Tailwind background color class for an avatar based on a name.
+ *
+ * The function hashes the provided `name` and maps it into a fixed palette of Tailwind color utility classes,
+ * ensuring the same name always yields the same color. An empty or falsy name will map to the first color.
+ *
+ * @param name - The display name used to derive the avatar color.
+ * @returns A Tailwind CSS background color class (e.g., `'bg-blue-500'`).
+ */
 function getAvatarColor(name: string): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -72,6 +88,14 @@ function getAvatarColor(name: string): string {
   return colors[Math.abs(hash) % colors.length];
 }
 
+/**
+ * Renders the management "User List" page with client-side search, pagination and create/edit dialog.
+ *
+ * Displays a paginated table of users (sourced from mockUsers), supports filtering by name/email/phone,
+ * selecting rows-per-page, and provides actions to view (navigates to /management/users/{id}) or edit a user.
+ * Opens a UserFormDialog for creating or editing users; maintains internal state for search term,
+ * pagination, dialog visibility, editing target, and dialog mode ("create" | "edit").
+ */
 export default function UserList() {
     const router = useRouter();
     const [searchTerm, setSearchTerm] = useState("");

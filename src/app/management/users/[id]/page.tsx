@@ -13,6 +13,21 @@ import { Button } from "@/components/ui/button"
 import { Briefcase, FolderOpen } from "lucide-react"
 import { mockUsers } from "@/lib/mock-data"
 
+/**
+ * Renders the user detail page for a given route `id`, showing user info, tabbed sections, and an edit dialog.
+ *
+ * This client-side Next.js page component reads the `id` route parameter, resolves the corresponding user from
+ * `mockUsers` (falls back to the first mock user if none matches), and displays:
+ * - A user details card,
+ * - A tabbed card with "Work Info" and "Projects" views (controlled by internal state),
+ * - A header with breadcrumbs and an "Edit" button that opens a controlled `UserFormDialog` in edit mode.
+ *
+ * State managed internally:
+ * - activeTab: which tab is shown ("workinfo" | "projects"),
+ * - isUserFormOpen: whether the edit dialog is open.
+ *
+ * The component is intended to be used as a page at the route handling `/management/users/[id]`.
+ */
 export default function UserDetailPage() {
   const params = useParams<{ id: string }>()
   const id = params.id

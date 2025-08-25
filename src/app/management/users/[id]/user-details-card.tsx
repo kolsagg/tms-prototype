@@ -9,7 +9,15 @@ interface UserDetailsCardProps {
   user: User;
 }
 
-// Kullanıcı isminden baş harfleri çıkaran yardımcı fonksiyon
+/**
+ * Extracts up to two uppercase initials from a full name.
+ *
+ * Splits the input `name` on spaces, takes the first character of each word,
+ * joins them, converts to uppercase, and returns at most the first two characters.
+ *
+ * @param name - The full name string to derive initials from.
+ * @returns Up to two uppercase initials (empty string if `name` is empty).
+ */
 function getInitials(name: string): string {
   return name
     .split(' ')
@@ -19,7 +27,14 @@ function getInitials(name: string): string {
     .slice(0, 2); // Maksimum 2 harf
 }
 
-// Avatar rengi için hash fonksiyonu
+/**
+ * Deterministically selects a Tailwind background color class for an avatar based on a name.
+ *
+ * Uses a simple character-code hash of `name` to pick one of a fixed palette of CSS classes.
+ *
+ * @param name - The input name used to derive the color (empty string yields the first palette color).
+ * @returns A Tailwind CSS background color class (e.g. `bg-blue-500`).
+ */
 function getAvatarColor(name: string): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -42,6 +57,16 @@ function getAvatarColor(name: string): string {
   return colors[Math.abs(hash) % colors.length];
 }
 
+/**
+ * Render a user details card showing an avatar, basic profile info, contact links, and a statistics placeholder.
+ *
+ * The avatar displays up to two initials derived from `user.name` with a background color computed from the name.
+ * The component shows `user.name`, `user.role` (falls back to "Senior FI Consultant" when absent), a static "FI" label,
+ * the user's phone number, and an email link (mailto). A right-hand panel contains a placeholder for statistics.
+ *
+ * @param user - The user to render. Expected fields used: `name` (required), `email`, `phone`, and optional `role`.
+ * @returns A JSX element containing the rendered user detail card.
+ */
 export function UserDetailsCard({ user }: UserDetailsCardProps) {
   return (
     <Card className="bg-white shadow-sm">

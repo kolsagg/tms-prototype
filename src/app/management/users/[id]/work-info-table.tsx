@@ -53,6 +53,18 @@ interface WorkInfoTableProps {
   userId: string;
 }
 
+/**
+ * Renders a searchable, paginated table of work information for a user.
+ *
+ * Displays controls for selecting rows per page, a search input that filters by project, title, or status (case-insensitive),
+ * action buttons (refresh, export, download, print), and a table of work items with Turkish column labels.
+ * Includes client-side pagination with a 3-button page snippet, empty-state messaging, and an "İşlemler" action button per row.
+ *
+ * The component accepts a `userId` prop but does not use it in the current implementation (kept for future integration).
+ *
+ * @param userId - Identifier of the user whose work information will be shown (currently unused).
+ * @returns A React element containing the work information table and its controls.
+ */
 export function WorkInfoTable({ userId: _userId }: WorkInfoTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState("10");

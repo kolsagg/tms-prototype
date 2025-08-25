@@ -13,7 +13,15 @@ import {
 import { X } from "lucide-react";
 import { type User } from "@/lib/mock-data";
 
-// Kullanıcı isminden baş harfleri çıkaran yardımcı fonksiyon
+/**
+ * Derives up to two uppercase initials from a full name.
+ *
+ * Splits `name` by spaces, takes the first character of each word, joins them,
+ * converts to uppercase, and returns the first two characters of the result.
+ *
+ * @param name - The full name (one or more words) from which to extract initials.
+ * @returns Up to two uppercase initials (empty string if `name` is empty or contains only spaces).
+ */
 function getInitials(name: string): string {
   return name
     .split(' ')
@@ -23,7 +31,16 @@ function getInitials(name: string): string {
     .slice(0, 2); // Maksimum 2 harf
 }
 
-// Avatar rengi için hash fonksiyonu
+/**
+ * Deterministically maps a name to a Tailwind-like background color class.
+ *
+ * Uses a simple string hash to pick one of a fixed set of color classes so the
+ * same input name always yields the same color. An empty or unknown name
+ * returns the first color in the palette (`bg-blue-500`).
+ *
+ * @param name - The input name used to compute the color mapping.
+ * @returns A Tailwind-esque background color class (e.g. `bg-emerald-500`).
+ */
 function getAvatarColor(name: string): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -70,6 +87,20 @@ interface UserFormDialogProps {
   mode?: 'create' | 'edit';
 }
 
+/**
+ * Modal form component for creating or editing a user.
+ *
+ * Renders a dialog with an avatar preview, inputs for personal/contact/job information,
+ * role selection, radio controls for project manager and active status, and action buttons.
+ * In "edit" mode (when `editUser` is provided and `open` is true) the form is pre-filled from `editUser`.
+ * Submitting the form currently logs the collected data and closes the dialog; cancelling resets the form and closes it.
+ *
+ * @param open - Controls whether the dialog is visible.
+ * @param onOpenChange - Callback invoked with the new open state to control the dialog from the parent.
+ * @param editUser - Optional user data used to populate the form when editing.
+ * @param mode - Either `'create'` or `'edit'`; defaults to `'create'`. Determines header/submit text and pre-fill behavior.
+ * @returns A JSX element containing the user form dialog.
+ */
 export function UserFormDialog({ open, onOpenChange, editUser, mode = 'create' }: UserFormDialogProps) {
   const [formData, setFormData] = useState<FormData>({
     firstName: "",

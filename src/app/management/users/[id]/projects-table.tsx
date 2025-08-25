@@ -44,6 +44,17 @@ interface ProjectsTableProps {
   userId: string;
 }
 
+/**
+ * Renders a client-side projects table UI with search and pagination controls.
+ *
+ * The component maintains local state for `searchTerm` and `rowsPerPage` and filters the
+ * internal `mockProjects` array by `name`, `projectNumber`, or `status` (case-insensitive).
+ * Currently `mockProjects` is empty, so the table displays a "no data" placeholder.
+ *
+ * The `userId` prop is accepted but unused in the current implementation.
+ *
+ * @returns A React element containing the projects table, top controls, and pagination UI.
+ */
 export function ProjectsTable({ userId: _userId }: ProjectsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState("10");

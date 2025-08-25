@@ -48,6 +48,19 @@ interface FilterState {
   search: string;
 }
 
+/**
+ * Leave/Report management React page: renders a filterable, paginated table of leave requests with create/edit flows.
+ *
+ * Renders a UI for viewing and managing mock leave requests including:
+ * - Filters for leave type, date range (present in UI but not applied to the dataset), and free-text search.
+ * - Pagination and items-per-page selection.
+ * - Row actions: approve/reject buttons for pending requests (placeholders that log to console) and an edit dialog that opens with transformed request data.
+ * - A "New Record" dialog to create entries.
+ *
+ * Uses in-memory mock data and local component state for filters, pagination, and UI behavior.
+ *
+ * @returns JSX.Element – the Leave/Report management page component.
+ */
 export default function LeaveManagementPage() {
   const [filters, setFilters] = useState<FilterState>({
     leaveType: "all",

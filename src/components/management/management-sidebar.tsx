@@ -44,7 +44,7 @@ const managementNav = [
   { name: "Projeler", href: "/management/projects", icon: Briefcase },
   { name: "Görevler", href: "/management/tasks", icon: ListTodo },
   { name: "Kullanıcılar", href: "/management/users", icon: Users },
-  { name: "İzin Yönetimi", href: "/management/permissions", icon: Split },
+  { name: "İzin Yönetimi", href: "/management/leave", icon: Split },
   { name: "Aktivite", href: "/", icon: ClockPlus },
 ];
 
